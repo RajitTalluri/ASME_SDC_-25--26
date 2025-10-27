@@ -9,9 +9,6 @@ const int S1 = 9;
 const int S2 = 10;
 const int S3 = 11;
 const int signal = 12;
-// note - sensor LED pin is hardwired to 5V. You can use
-// an I/O pin to turn the white LEDs on and off instead, but a single
-// I/O pin cannot provide enough current for all four LEDs at full brightness.
 
 // LED pins
 const int redLED = 10;
