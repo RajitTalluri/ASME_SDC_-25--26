@@ -25,25 +25,32 @@ void setup() {
   
   // Calibration sequence
   Serial.println("=== CALIBRATION MODE ===");
+  delay(3000);
   Serial.println("Point sensor at WHITE surface...");
   delay(3000);
   
   calibrateWhite();
   
+  delay(3000);
+  Serial.println("White completed, prepare black sensor");
+  delay(1000);
   Serial.println("\nNow point sensor at BLACK surface...");
   delay(3000);
   
   calibrateBlack();
   
+  delay(3000);
   Serial.println("\n=== CALIBRATION COMPLETE ===");
   Serial.println("Min/Max values:");
   Serial.print("Red: "); Serial.print(redMin); Serial.print("-"); Serial.println(redMax);
   Serial.print("Green: "); Serial.print(greenMin); Serial.print("-"); Serial.println(greenMax);
   Serial.print("Blue: "); Serial.print(blueMin); Serial.print("-"); Serial.println(blueMax);
+
+  delay(3000);
   Serial.println("\nStarting measurements...\n");
   
   calibrated = true;
-  delay(2000);
+  delay(3000);
 }
 
 void calibrateWhite() {
@@ -118,21 +125,3 @@ void loop() {
   
   delay(500);
 }
-```
-
-**How to use:**
-1. Upload code
-2. Open Serial Monitor
-3. Immediately point at **white paper** (wait 3 seconds)
-4. Then point at **black paper** (wait 3 seconds)
-5. Done! Now it outputs calibrated RGB values
-
----
-
-## **Expected Results After Calibration**
-```
-White paper:  255, 255, 255 (or close to it)
-Black paper:  0, 0, 0 (or close to it)
-Red marker:   255, 50, 30
-Green marker: 30, 255, 40
-Blue marker:  40, 60, 255
