@@ -1,9 +1,11 @@
 import serial
 import time
 import csv
+from datetime import datetime
 import os
 from pynput import keyboard
 
+# Configuration
 SERIAL_PORT = 'COM3'  # Update to Arduino Port
 BAUD_RATE = 9600      # Match to Arduino Baud Rate
 
@@ -17,10 +19,10 @@ OUTPUT_FILE = os.path.join(DATA_DIR, 'raw_data.csv')
 marker_flag = False
 
 def on_press(key):
-    """Callback for keyboard press events"""
+    """Callback for spacebar press to insert markers"""
     global marker_flag
     try:
-        if key == keyboard.Key.space: # spacebar pressed
+        if key == keyboard.Key.space:
             marker_flag = True
     except AttributeError:
         pass
@@ -28,7 +30,6 @@ def on_press(key):
 def read_arduino_data(duration=None, num_samples=None):
     """
     Read data from Arduino via serial connection.
-    Press SPACEBAR to insert object change markers.
     
     Args:
         duration: Time in seconds to collect data (optional)
@@ -50,19 +51,17 @@ def read_arduino_data(duration=None, num_samples=None):
         listener = keyboard.Listener(on_press=on_press)
         listener.start()
         
-        # Open CSV file for writing
-        with open(OUTPUT_FILE, 'w', newline='') as csvfile:
+        # Open CSV file for appending so multiple runs can be combined later
+        file_exists = os.path.exists(OUTPUT_FILE)
+        with open(OUTPUT_FILE, 'a', newline='') as csvfile:
             csv_writer = csv.writer(csvfile)
-            
-            # Write header
-            csv_writer.writerow(['Red', 'Green', 'Blue'])
+            # Write header if file is new
+            if not file_exists or os.path.getsize(OUTPUT_FILE) == 0:
+                csv_writer.writerow(['Timestamp', 'Red', 'Green', 'Blue', 'Raw'])
             
             sample_count = 0
             marker_count = 0
             start_time = time.time()
-            
-            # Skip calibration messages
-            calibration_done = False
             
             while True:
                 # Check stopping conditions
@@ -71,55 +70,64 @@ def read_arduino_data(duration=None, num_samples=None):
                 if num_samples and sample_count >= num_samples:
                     break
                 
-                # Check for spacebar press
+                # Check for spacebar press and insert marker
                 if marker_flag:
-                    csv_writer.writerow(['---OBJECT_CHANGE---', '', ''])
+                    marker_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+                    csv_writer.writerow([marker_timestamp, '', '', '', '---MARKER---'])
                     marker_count += 1
                     print(f"\n>>> MARKER INSERTED (Total markers: {marker_count}) <<<\n")
                     marker_flag = False
                 
                 # Read data from Arduino
                 if ser.in_waiting > 0:
-                    line = ser.readline().decode('utf-8').strip()
+                    line = ser.readline().decode('utf-8', errors='ignore').strip()
                     
-                    if line:
-                        # Skip calibration messages
-                        skip_keywords = ['calibration', 'point', 'white', 'black', 
-                                       'completed', 'prepare', 'min/max', 'starting',
-                                       '===', 'data start', '---']
-                        
-                        if any(keyword in line.lower() for keyword in skip_keywords):
-                            print(f"[Calibration] {line}")
-                            continue
-                        
-                        # Check if line contains RGB data (format: "R,G,B")
-                        if ',' in line:
+                    if line:  # If line is not empty
+                        # Try to parse common RGB formats: "R:123,G:45,B:67" or "123,45,67"
+                        def parse_rgb(s):
+                            s = s.strip()
                             try:
-                                parts = line.split(',')
-                                if len(parts) == 3:
-                                    r, g, b = map(int, parts)
-                                    
-                                    # Print to console
-                                    print(f"Sample {sample_count + 1}: R={r:3d}, G={g:3d}, B={b:3d}")
-                                    
-                                    # Write to CSV
-                                    csv_writer.writerow([r, g, b])
-                                    csvfile.flush()  # Ensure data is written immediately
-                                    
-                                    sample_count += 1
-                            except ValueError:
-                                # Skip lines that can't be parsed as integers
-                                continue
+                                if ':' in s and ',' in s:
+                                    # format like R:123,G:45,B:67
+                                    parts = [p.split(':')[1] for p in s.split(',')]
+                                    r, g, b = [int(p) for p in parts]
+                                    return r, g, b
+                                if ',' in s:
+                                    parts = [p.strip() for p in s.split(',')]
+                                    if len(parts) >= 3:
+                                        r, g, b = [int(parts[0]), int(parts[1]), int(parts[2])]
+                                        return r, g, b
+                            except Exception:
+                                return None
+                            return None
+                        
+                        rgb = parse_rgb(line)
+                        if rgb is None:
+                            r = g = b = ''
+                        else:
+                            r, g, b = rgb
+                        
+                        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+                        
+                        # Print to console
+                        print(f"[{timestamp}] {line}")
+                        
+                        # Write to CSV with parsed columns and raw data
+                        csv_writer.writerow([timestamp, r, g, b, line])
+                        # Ensure data is written to disk promptly
+                        csvfile.flush()
+                        try:
+                            os.fsync(csvfile.fileno())
+                        except Exception:
+                            pass
+                        
+                        sample_count += 1
                 
                 time.sleep(0.01)  # Small delay to prevent CPU overload
         
-        listener.stop()
-        print(f"\n{'='*50}")
-        print(f"Data collection complete!")
-        print(f"Samples collected: {sample_count}")
-        print(f"Markers inserted: {marker_count}")
-        print(f"Saved to: {OUTPUT_FILE}")
-        print(f"{'='*50}")
+        print(f"\nData collection complete! Saved {sample_count} samples to {OUTPUT_FILE}")
+        if marker_count > 0:
+            print(f"Total markers inserted: {marker_count}")
         
     except serial.SerialException as e:
         print(f"Error: Could not open serial port {SERIAL_PORT}")
@@ -130,17 +138,16 @@ def read_arduino_data(duration=None, num_samples=None):
         print("3. Make sure no other program is using the port")
         
     except KeyboardInterrupt:
-        print(f"\n\n{'='*50}")
-        print(f"Stopped by user")
-        print(f"Samples collected: {sample_count}")
-        print(f"Markers inserted: {marker_count}")
-        print(f"Saved to: {OUTPUT_FILE}")
-        print(f"{'='*50}")
+        print(f"\n\nStopped by user. Saved {sample_count} samples to {OUTPUT_FILE}")
+        if marker_count > 0:
+            print(f"Markers inserted: {marker_count}")
         
     finally:
         if 'ser' in locals() and ser.is_open:
             ser.close()
             print("Serial connection closed")
+        listener.stop()
+
 
 def list_available_ports():
     """List all available serial ports"""
