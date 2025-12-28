@@ -4,6 +4,10 @@ from tkinter import Tk, filedialog
 
 
 # Script to put RGB values in 0-1 range by dividing by 255
+# Numerical values to labels:
+        # 0 for neither
+        # 1 for blue/green
+        
 
 
 # File paths
@@ -106,6 +110,19 @@ def preprocess_data(file_path):
     print(f"  Red:   min={df['Red'].min():.4f}, max={df['Red'].max():.4f}")
     print(f"  Green: min={df['Green'].min():.4f}, max={df['Green'].max():.4f}")
     print(f"  Blue:  min={df['Blue'].min():.4f}, max={df['Blue'].max():.4f}")
+    
+    # Convert category labels to numerical values
+    print("\nConverting labels to numerical values...")
+    def convert_label(category):
+        if category.lower() in ['blue', 'green']:
+            return 1
+        else:  # neither
+            return 0
+    
+    df['Category'] = df['Category'].apply(convert_label)
+    print("  blue → 1")
+    print("  green → 1")
+    print("  neither → 0")
     
     # Save preprocessed data
     output_file = get_output_filename()
