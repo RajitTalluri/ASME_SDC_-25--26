@@ -1,0 +1,61 @@
+@startuml ASME SDC 25-26 Diagram
+
+package Computing {
+usecase "Arduino" as Ad
+usecase "ESP"
+}
+
+package ColorSensor {
+usecase "Neural Network model" as NN
+usecase "Color Sensor Live Values" as LV
+usecase "Prediction" as Pd
+usecase "Physical Switch" as PS
+}
+
+package DriveTrain {
+usecase "DriveTrain" as DT
+}
+
+package Collection {
+usecase "Collection" as Col
+}
+
+package Power {
+usecase "Battery" as B
+usecase "Buck Converter 1" as BC1
+usecase "Buck Converter 2" as BC2
+usecase "5V"
+usecase "3.3V"
+}
+
+
+(Xbox Controller) --> Ad #black;text:black : Controller Inputs
+
+
+'DRIVETRAIN
+Ad --> DT
+
+
+'COLLECTION
+Ad --> Col
+
+
+'COLORSENSOR
+ESP --> LV
+ESP --> NN
+LV --> ESP #black;line.dashed;
+ESP --> NN #black;line.dashed;
+NN --> Pd #black;line.dashed;
+Pd --> ESP #black;line.dotted;
+ESP --> PS #black;line.dotted;
+
+'POWER
+B --> BC1
+B --> BC2
+BC1 --> 5V
+5V --> Ad
+BC2 --> 3.3V
+3.3V --> ESP
+
+
+@enduml

@@ -95,18 +95,21 @@ def train():
     model = RGBclassifierNN() # create model instance
     
     
-    optimizer = optim.Adam(model.parameters(), lr=0.01) # updates wieghts, learning rate
+    optimizer = optim.Adam(model.parameters(), lr=0.001) # updates wieghts, learning rate
     
     
     loss_fn = nn.BCEWithLogitsLoss() # binary cross entropty loss function
     
-    epochs = 100
+    epochs = 1000
+    losses = []
     for epoch in range(epochs):
         predictions = model(RGB_train) # forward pass
         loss = loss_fn(predictions, Labels_train) # calculates loss
         loss.backward() # backpropagation
         optimizer.step() # update weights
         optimizer.zero_grad() # reset gradients for next epoch
+        
+        losses.append(loss.item()) # save loss values
         
         #print loss every 10 epochs
         if (epoch + 1) % 10 == 0:
@@ -119,10 +122,44 @@ def train():
         test_loss = loss_fn(test_pred, Labels_test)
         print(f"\nTest Loss: {test_loss.item():.4f}")
         
+        test_probs = torch.sigmoid(test_pred)
+        
         # Calculate accuracy
-        pred_binary = (test_pred > 0.5).float()
+        pred_binary = (test_probs > 0.5).float()
         accuracy = (pred_binary == Labels_test).float().mean().item()
-        print(f"Test Accuracy: {accuracy:.2%}")
+        print(f"Test Accuracy: {accuracy:.2%}\n")
+        
+        # Print individual predictions
+        border = "-" * 75
+        print(border)
+        print("Individual Test Predictions:")
+        print(border)
+        print(f"{'Index':<8} {'RGB Values':<25} {'Predicted':<12} {'Actual':<10} {'Confidence':<12} {'Correct'}")
+        print(border)
+        
+        for i in range(len(RGB_test)):
+            rgb_vals = RGB_test[i].numpy()
+            predicted_class = int(pred_binary[i].item())
+            actual_class = int(Labels_test[i].item())
+            confidence = test_probs[i].item()
+            
+            # Confidence represents probability of class 1
+            # If predicted class 0, confidence in that prediction is (1 - probability)
+            if predicted_class == 0:
+                confidence_in_prediction = 1 - confidence
+            else:
+                confidence_in_prediction = confidence
+            
+            is_correct = "Yes" if predicted_class == actual_class else "No"
+            
+            rgb_str = f"[{rgb_vals[0]:.3f}, {rgb_vals[1]:.3f}, {rgb_vals[2]:.3f}]"
+            print(f"{i:<8} {rgb_str:<25} {predicted_class:<12} {actual_class:<10} {confidence_in_prediction:>6.2%}      {is_correct}")
+        
+        print(border)
+
+
+# To do: Add function to save model
+
 
 if __name__ == "__main__":
     train()
