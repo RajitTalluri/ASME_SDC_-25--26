@@ -5,7 +5,7 @@ usecase "Arduino" as Ad
 usecase "ESP"
 }
 
-package ColorSensor {
+package "Color Sensor"  {
 usecase "Neural Network model" as NN
 usecase "Color Sensor Live Values" as LV
 usecase "Prediction" as Pd
