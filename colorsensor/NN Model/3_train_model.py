@@ -1,3 +1,4 @@
+from xml.parsers.expat import model
 import torch 
 import torch.nn as nn # layers, losses
 import torch.optim as optim # optimizers / weight update algorithims
@@ -83,7 +84,7 @@ def train():
     RGB, Labels = load_and_prepare_data() # X is RBG values y is labels
     if RGB is None or Labels is None:
         print("File error.")
-        return
+        return None, None, None, None
     
     indices = torch.randperm(len(RGB)) # randomize indices to 80 20 split
     train_size = int(0.8 * len(RGB))
@@ -94,26 +95,38 @@ def train():
     
     model = RGBclassifierNN() # create model instance
     
-    
     optimizer = optim.Adam(model.parameters(), lr=0.001) # updates wieghts, learning rate
-    
     
     loss_fn = nn.BCEWithLogitsLoss() # binary cross entropty loss function
     
     epochs = 1000
     losses = []
+    test_accuracies = []
+
     for epoch in range(epochs):
+        # Forward pass
         predictions = model(RGB_train) # forward pass
         loss = loss_fn(predictions, Labels_train) # calculates loss
+
+        # Backpropagation
+        optimizer.zero_grad() # reset gradients for next epoch
         loss.backward() # backpropagation
         optimizer.step() # update weights
-        optimizer.zero_grad() # reset gradients for next epoch
-        
+
         losses.append(loss.item()) # save loss values
-        
-        #print loss every 10 epochs
+
+        # Evaluate on test set every 10 epochs
         if (epoch + 1) % 10 == 0:
-            print(f"Epoch {epoch+1}: Loss = {loss.item():.4f}")
+            model.eval() # set to evaluation mode
+            with torch.no_grad():
+                test_pred = model(RGB_test)
+                test_probs = torch.sigmoid(test_pred)
+                pred_binary = (test_probs > 0.5).float()
+                accuracy = (pred_binary == Labels_test).float().mean().item()
+                test_accuracies.append(accuracy)
+
+            print(f"Epoch {epoch+1}: Loss = {loss.item():.4f}, Test Accuracy = {accuracy:.2%}")
+            model.train() # back to training mode
     
     # Evaluate on test set after training
     model.eval() # set to evaluation mode
@@ -156,10 +169,52 @@ def train():
             print(f"{i:<8} {rgb_str:<25} {predicted_class:<12} {actual_class:<10} {confidence_in_prediction:>6.2%}      {is_correct}")
         
         print(border)
+        
+    return model, losses, epochs, test_accuracies
 
 
-# To do: Add function to save model
-
+SAVE_MODEL = False # Set True to save model
 
 if __name__ == "__main__":
-    train()
+    model, losses, epochs, test_accuracies = train()
+
+    if SAVE_MODEL:
+        name = input("Enter model filename (press Enter for default): ").strip()
+        if name == "":
+            name = "rgb_classifier.pth"
+        if not name.endswith(".pth"):
+            name += ".pth"
+
+        MODEL_PATH = os.path.join(SCRIPT_DIR, name)
+        torch.save(model.state_dict(), MODEL_PATH)
+        print(f"Model saved to {MODEL_PATH}")
+    else:
+        print("Model not saved.")
+
+    # Epochs for plotting
+    epochs_range = np.arange(1, epochs+1)
+    accuracy_range = np.arange(10, epochs+1, 10)  # every 10 epochs
+
+    plt.figure(figsize=(12,5))
+
+    #Training Loss subplot
+    plt.subplot(1,2,1)
+    plt.plot(epochs_range, losses, label="Training Loss", color="blue", linewidth=2)
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Training Loss Over Time")
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.legend()
+    # Test Accuracy subplot
+    plt.subplot(1,2,2)
+    plt.plot(accuracy_range, test_accuracies, label="Test Accuracy", color="green",
+            linewidth=2, marker='o')
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    plt.title("Test Accuracy Over Training")
+    plt.ylim(0,1)
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
