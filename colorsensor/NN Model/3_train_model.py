@@ -99,7 +99,7 @@ def train():
     
     loss_fn = nn.BCEWithLogitsLoss() # binary cross entropty loss function
     
-    epochs = 1000
+    epochs = 500
     losses = []
     test_accuracies = []
 
