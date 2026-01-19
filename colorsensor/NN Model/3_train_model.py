@@ -1,4 +1,3 @@
-from xml.parsers.expat import model
 import torch 
 import torch.nn as nn # layers, losses
 import torch.optim as optim # optimizers / weight update algorithims
@@ -99,7 +98,7 @@ def train():
     
     loss_fn = nn.BCEWithLogitsLoss() # binary cross entropty loss function
     
-    epochs = 1000
+    epochs = 750
     losses = []
     test_accuracies = []
 
@@ -173,23 +172,99 @@ def train():
     return model, losses, epochs, test_accuracies
 
 
-SAVE_MODEL = False # Set True to save model
+def export_weights_for_esp32(model, filename="ColorSensorNN_weights.h"):
+    """
+    Use model weights as C arrays for ESP32 deployment
+    """
+    state = model.state_dict()
+    
+    with open(filename, 'w') as f:
+        f.write("#ifndef MODEL_WEIGHTS_H\n")
+        f.write("#define MODEL_WEIGHTS_H\n\n")
+        
+        # Layer 1: fc1 (3 -> 64)
+        w1 = state['fc1.weight'].cpu().numpy()  # Shape: [64, 3]
+        b1 = state['fc1.bias'].cpu().numpy()    # Shape: [64]
+        
+        f.write("// Layer 1: 3 inputs -> 64 outputs\n")
+        f.write("const float W1[3][64] = {\n")
+        for i in range(3):
+            f.write("  {")
+            f.write(", ".join(f"{w1[j][i]:.8f}f" for j in range(64)))
+            f.write("},\n")
+        f.write("};\n\n")
+        
+        f.write("const float b1[64] = {\n  ")
+        f.write(", ".join(f"{b1[i]:.8f}f" for i in range(64)))
+        f.write("\n};\n\n")
+        
+        # Layer 2: fc2 (64 -> 32)
+        w2 = state['fc2.weight'].cpu().numpy()  # Shape: [32, 64]
+        b2 = state['fc2.bias'].cpu().numpy()    # Shape: [32]
+        
+        f.write("// Layer 2: 64 inputs -> 32 outputs\n")
+        f.write("const float W2[64][32] = {\n")
+        for i in range(64):
+            f.write("  {")
+            f.write(", ".join(f"{w2[j][i]:.8f}f" for j in range(32)))
+            f.write("},\n")
+        f.write("};\n\n")
+        
+        f.write("const float b2[32] = {\n  ")
+        f.write(", ".join(f"{b2[i]:.8f}f" for i in range(32)))
+        f.write("\n};\n\n")
+        
+        # Layer 3: fc3 (32 -> 16)
+        w3 = state['fc3.weight'].cpu().numpy()  # Shape: [16, 32]
+        b3 = state['fc3.bias'].cpu().numpy()    # Shape: [16]
+        
+        f.write("// Layer 3: 32 inputs -> 16 outputs\n")
+        f.write("const float W3[32][16] = {\n")
+        for i in range(32):
+            f.write("  {")
+            f.write(", ".join(f"{w3[j][i]:.8f}f" for j in range(16)))
+            f.write("},\n")
+        f.write("};\n\n")
+        
+        f.write("const float b3[16] = {\n  ")
+        f.write(", ".join(f"{b3[i]:.8f}f" for i in range(16)))
+        f.write("\n};\n\n")
+        
+        # Layer 4: fc4 (16 -> 1)
+        w4 = state['fc4.weight'].cpu().numpy()  # Shape: [1, 16]
+        b4 = state['fc4.bias'].cpu().numpy()    # Shape: [1]
+        
+        f.write("// Layer 4: 16 inputs -> 1 output\n")
+        f.write("const float W4[16] = {\n  ")
+        f.write(", ".join(f"{w4[0][i]:.8f}f" for i in range(16)))
+        f.write("\n};\n\n")
+        
+        f.write(f"const float b4 = {b4[0]:.8f}f;\n\n")
+        
+        f.write("#endif // MODEL_WEIGHTS_H\n")
+    
+    print(f"\n NN weights stored in {filename}")
+    print(f"File size: {os.path.getsize(filename) / 1024:.2f} KB")
+
+EXPORT_FOR_ESP32 = True  # True for exporting weights to C arrays for ESP32
 
 if __name__ == "__main__":
     model, losses, epochs, test_accuracies = train()
 
-    if SAVE_MODEL:
-        name = input("Enter model filename (press Enter for default): ").strip()
+    if EXPORT_FOR_ESP32:
+        name = input("Enter filename # or version for ESP32 weights (press Enter for default): ").strip()
         if name == "":
-            name = "rgb_classifier.pth"
-        if not name.endswith(".pth"):
-            name += ".pth"
+            name = "NN_weights.h" # default name if blank
+        if not name.endswith(".h"):
+            name += "_NN_weights.h"
 
-        MODEL_PATH = os.path.join(SCRIPT_DIR, name)
-        torch.save(model.state_dict(), MODEL_PATH)
-        print(f"Model saved to {MODEL_PATH}")
+        ARDUINO_DIR = os.path.join(SCRIPT_DIR, '..', 'Arduino')
+        WEIGHTS_PATH = os.path.join(ARDUINO_DIR, name)
+        export_weights_for_esp32(model, WEIGHTS_PATH) # export function call
+        
     else:
-        print("Model not saved.")
+        print("Weights not exported.")
+
 
     # Epochs for plotting
     epochs_range = np.arange(1, epochs+1)
