@@ -93,27 +93,27 @@ project/
 ## Data Collection Procedure
 
 ### Sample Selection
-Collect diverse samples for robust model training. More variety improves model generalization.
+Collect a variety of shades and materials for each object for better training. Each individual object should represent a single data point, label data script has a feature to combine data points for the same object.
+**Note the same object can be recorded at different angles as another data point. 
 
 **Blue Category:**
 - Multiple shades (navy, royal blue, sky blue, turquoise, cobalt, azure)
 - Different materials (plastic, paper, fabric, metal)
 - Different finishes (matte, glossy, textured)
-- Aim for 8-12 distinct blue objects minimum
+- Aim for 20 distinct blue objects minimum
 
 **Green Category:**
 - Multiple shades (forest green, lime, mint, olive, emerald, sage)
 - Different materials (plastic, paper, fabric, metal)
 - Different finishes (matte, glossy, textured)
-- Aim for 8-12 distinct green objects minimum
+- Aim for 20 distinct green objects minimum
 
 **Neither Category:**
 - Various non-target colors (red, yellow, purple, brown, orange, pink)
-- Neutral colors (white, black, gray in multiple shades)
-- Edge cases (cyan, teal, yellow-green - colors close to target categories)
-- Aim for 10-15 objects to represent diverse non-target colors
+- Neutral colors (brown, grey, black in multiple shades)
+- Aim for 20 objects to represent diverse non-target colors
 
-**Total Object Count:** 25-40 objects recommended for comprehensive training data
+**Total Object Count:** 70-80 objects recommended
 
 ### Collection Process
 
@@ -140,9 +140,10 @@ For each test object:
 1. **Position** - Place object 1-2cm beneath sensor
 2. **Stabilize** - Wait 2-3 seconds for readings to settle
 3. **Mark Start** - Press SPACEBAR to insert marker
-4. **Collect** - Maintain position for 5-10 seconds (~10-20 samples)
+4. **Collect** - Maintain position for ~5 seconds (~10 samples)
 5. **Mark End** - Press SPACEBAR to insert second marker
-6. **Next Object** - Remove current object and repeat
+6. **Record** - Record the objects classification (g, b, n) for data labeling later
+7. **Next Object** - Remove current object and repeat
 
 #### Monitoring Collection
 The console displays real-time RGB values:
@@ -155,16 +156,6 @@ The console displays real-time RGB values:
 
 #### Stop Collection
 Press **Ctrl+C** when finished. Data saves automatically to `../data/raw_data.csv`.
-
-### Sample Size Guidelines
-
-| Dataset Quality | Samples per Category | Total Samples | Objects Needed |
-|----------------|---------------------|---------------|----------------|
-| Minimum Viable | 50-100 | 150-300 | 15-20 |
-| Recommended | 200-300 | 600-900 | 25-35 |
-| Optimal | 400-600 | 1200-1800 | 35-50 |
-
-**Target:** Aim for 600-900 total samples with balanced distribution across categories. With 25-40 objects collecting 10-20 samples each, this target is achievable in 30-45 minutes.
 
 ---
 
@@ -186,14 +177,6 @@ Label (b=blue, g=green, n=neither, u=undo, q=quit): _
 ```
 
 ### Labeling Guidelines
-
-| RGB Pattern | Recommended Label | Key |
-|-------------|------------------|-----|
-| High Blue (B > 150), Low Red | Blue | `b` |
-| High Green (G > 180), moderate Red/Blue | Green | `g` |
-| High Red, Low Green/Blue | Neither | `n` |
-| Balanced low values | Neither | `n` |
-| Other patterns | Neither | `n` |
 
 ### Controls
 - `b` - Classify as blue
@@ -351,21 +334,6 @@ pip install pyserial pynput pandas
   ```bash
   pip install tk
   ```
-
----
-
-## Process Timeline
-
-| Phase | Estimated Duration |
-|-------|-------------------|
-| Hardware setup and verification | 5-10 minutes |
-| Sensor calibration | 2-3 minutes |
-| Data collection (600-900 samples, 25-40 objects) | 30-45 minutes |
-| Data labeling (600-900 samples) | 35-50 minutes |
-| Data preparation and validation | 1-2 minutes |
-| **Total** | **75-110 minutes** |
-
----
 
 ## Pre-Training Checklist
 
