@@ -1,6 +1,7 @@
 import torch 
 import torch.nn as nn # layers, losses
 import torch.optim as optim # optimizers / weight update algorithims
+from torch.optim import lr_scheduler as lr
 import numpy as np
 import os
 
@@ -47,11 +48,11 @@ def load_and_prepare_data():
     
     # Convert to tensors
     X_tensor = torch.tensor(X, dtype=torch.float32)
-    y_tensor = torch.tensor(y, dtype=torch.float32).unsqueeze(1)  # shape [n, 1]
+    y_tensor = torch.tensor(y, dtype=torch.float32).unsqueeze(1) # shape [n, 1]
     
     print(f"X shape: {X_tensor.shape}")
     print(f"y shape: {y_tensor.shape}")
-    print(f"Label distribution: {sum(y)} ones, {len(y) - sum(y)} zeros")
+    print(f"Label distribution: {sum(y)} ones: g or b, {len(y) - sum(y)} zeros: neither")
     
     return X_tensor, y_tensor
 
@@ -62,11 +63,12 @@ class RGBclassifierNN(nn.Module):
         super().__init__()
         # Defining the structure of the NN
         # fc: fully connected every input connects to each neuron in next layer
-        self.fc1 = nn.Linear(3, 64) # 3 nodes for R,G,B inputs
         self.ReLu = nn.ReLU() # negative values to 0
+        self.fc1 = nn.Linear(3, 64) # 3 nodes for R,G,B inputs
         self.fc2 = nn.Linear(64, 32) # compress
         self.fc3 = nn.Linear(32, 16) # compress
         self.fc4 = nn.Linear(16, 1) # output/end layer 
+        
     
     def forward(self, x):
         # how data moves through NN
@@ -80,12 +82,12 @@ class RGBclassifierNN(nn.Module):
 
         
 def train():
-    RGB, Labels = load_and_prepare_data() # X is RBG values y is labels
+    RGB, Labels = load_and_prepare_data() # X is RBG values, y is labels
     if RGB is None or Labels is None:
         print("File error.")
         return None, None, None, None
     
-    indices = torch.randperm(len(RGB)) # randomize indices to 80 20 split
+    indices = torch.randperm(len(RGB)) # randomize indices to 80 20 training/testing split
     train_size = int(0.8 * len(RGB))
     train_indices = indices[:train_size]
     test_indices = indices[train_size:]
@@ -94,7 +96,10 @@ def train():
     
     model = RGBclassifierNN() # create model instance
     
-    optimizer = optim.Adam(model.parameters(), lr=0.001) # updates wieghts, learning rate
+    # Adam algorithim optimizer
+    optimizer = optim.Adam(model.parameters(), lr=0.01) # updates wieghts and biases using learning rate
+    
+    scheduler = lr.StepLR(optimizer, step_size=50, gamma=0.1) # learning rate decay every 100 epochs
     
     loss_fn = nn.BCEWithLogitsLoss() # binary cross entropty loss function
     
@@ -110,7 +115,8 @@ def train():
         # Backpropagation
         optimizer.zero_grad() # reset gradients for next epoch
         loss.backward() # backpropagation
-        optimizer.step() # update weights
+        optimizer.step() # update weights and biases
+        scheduler.step() # update learning rate
 
         losses.append(loss.item()) # save loss values
 
@@ -183,8 +189,8 @@ def export_weights_for_esp32(model, filename="ColorSensorNN_weights.h"):
         f.write("#define MODEL_WEIGHTS_H\n\n")
         
         # Layer 1: fc1 (3 -> 64)
-        w1 = state['fc1.weight'].cpu().numpy()  # Shape: [64, 3]
-        b1 = state['fc1.bias'].cpu().numpy()    # Shape: [64]
+        w1 = state['fc1.weight'].cpu().numpy() # Shape: [64, 3]
+        b1 = state['fc1.bias'].cpu().numpy() # Shape: [64]
         
         f.write("// Layer 1: 3 inputs -> 64 outputs\n")
         f.write("const float W1[3][64] = {\n")
@@ -199,8 +205,8 @@ def export_weights_for_esp32(model, filename="ColorSensorNN_weights.h"):
         f.write("\n};\n\n")
         
         # Layer 2: fc2 (64 -> 32)
-        w2 = state['fc2.weight'].cpu().numpy()  # Shape: [32, 64]
-        b2 = state['fc2.bias'].cpu().numpy()    # Shape: [32]
+        w2 = state['fc2.weight'].cpu().numpy() # Shape: [32, 64]
+        b2 = state['fc2.bias'].cpu().numpy() # Shape: [32]
         
         f.write("// Layer 2: 64 inputs -> 32 outputs\n")
         f.write("const float W2[64][32] = {\n")
@@ -215,8 +221,8 @@ def export_weights_for_esp32(model, filename="ColorSensorNN_weights.h"):
         f.write("\n};\n\n")
         
         # Layer 3: fc3 (32 -> 16)
-        w3 = state['fc3.weight'].cpu().numpy()  # Shape: [16, 32]
-        b3 = state['fc3.bias'].cpu().numpy()    # Shape: [16]
+        w3 = state['fc3.weight'].cpu().numpy() # Shape: [16, 32]
+        b3 = state['fc3.bias'].cpu().numpy() # Shape: [16]
         
         f.write("// Layer 3: 32 inputs -> 16 outputs\n")
         f.write("const float W3[32][16] = {\n")
@@ -231,8 +237,8 @@ def export_weights_for_esp32(model, filename="ColorSensorNN_weights.h"):
         f.write("\n};\n\n")
         
         # Layer 4: fc4 (16 -> 1)
-        w4 = state['fc4.weight'].cpu().numpy()  # Shape: [1, 16]
-        b4 = state['fc4.bias'].cpu().numpy()    # Shape: [1]
+        w4 = state['fc4.weight'].cpu().numpy() # Shape: [1, 16]
+        b4 = state['fc4.bias'].cpu().numpy() # Shape: [1]
         
         f.write("// Layer 4: 16 inputs -> 1 output\n")
         f.write("const float W4[16] = {\n  ")
@@ -246,7 +252,7 @@ def export_weights_for_esp32(model, filename="ColorSensorNN_weights.h"):
     print(f"\n NN weights stored in {filename}")
     print(f"File size: {os.path.getsize(filename) / 1024:.2f} KB")
 
-EXPORT_FOR_ESP32 = True  # True for exporting weights to C arrays for ESP32
+EXPORT_FOR_ESP32 = False # True for exporting weights to C arrays for ESP32
 
 if __name__ == "__main__":
     model, losses, epochs, test_accuracies = train()
@@ -268,7 +274,7 @@ if __name__ == "__main__":
 
     # Epochs for plotting
     epochs_range = np.arange(1, epochs+1)
-    accuracy_range = np.arange(10, epochs+1, 10)  # every 10 epochs
+    accuracy_range = np.arange(10, epochs+1, 10) # every 10 epochs
 
     plt.figure(figsize=(12,5))
 
