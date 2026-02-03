@@ -99,21 +99,21 @@ def train():
     # Adam algorithim optimizer
     optimizer = optim.Adam(model.parameters(), lr=0.01) # updates wieghts and biases using learning rate
     
-    scheduler = lr.StepLR(optimizer, step_size=50, gamma=0.1) # learning rate decay every 100 epochs
+    scheduler = lr.StepLR(optimizer, step_size=50, gamma=0.1) # learning rate decay for every step_size epochs
     
     loss_fn = nn.BCEWithLogitsLoss() # binary cross entropty loss function
     
     epochs = 750
-    losses = []
-    test_accuracies = []
+    losses = [] # hold loss values
+    test_accuracies = [] # hold test accuracies over time
 
     for epoch in range(epochs):
         # Forward pass
         predictions = model(RGB_train) # forward pass
-        loss = loss_fn(predictions, Labels_train) # calculates loss
+        loss = loss_fn(predictions, Labels_train) # calculates loss for predictions vs actual labels
 
         # Backpropagation
-        optimizer.zero_grad() # reset gradients for next epoch
+        optimizer.zero_grad() # reset gradients for next epoch 
         loss.backward() # backpropagation
         optimizer.step() # update weights and biases
         scheduler.step() # update learning rate
