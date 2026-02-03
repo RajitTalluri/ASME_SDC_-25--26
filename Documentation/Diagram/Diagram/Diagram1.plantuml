@@ -1,56 +1,59 @@
 @startuml ASME SDC 25-26 Diagram
 
-package Computing {
-usecase "Arduino" as Ad
-usecase "ESP"
+package Power {
+usecase "22 V Battery" as B
+usecase "12V Buck Converter" as BC12
+usecase "Buck Converter 6" as BC6
+usecase "Buck Converter 5" as BC5
 }
 
-package "Color Sensor"  {
-usecase "Neural Network model" as NN
-usecase "Color Sensor Live Values" as LV
-usecase "Prediction" as Pd
-usecase "Physical Switch" as PS
-}
-
-package DriveTrain {
-usecase "DriveTrain" as DT
+package Drivetrain {
+    usecase "L298N Motor Driver" as L298N
+    usecase "12V DC Motor 1" as DC1
+    usecase "12V DC Motor 2" as DC2
 }
 
 package Collection {
-usecase "Collection" as Col
+    usecase "Sorting Servo Motor 6V" as SSM
+    usecase "MOSFET (12V)" as MOS12
 }
 
-package Power {
-usecase "Battery" as B
-usecase "Buck Converter 1" as BC1
-usecase "Buck Converter 2" as BC2
+package Sorting {
+    usecase "Collection Servo Motor 6V" as CSM
+    usecase "MOSFET (6V) #1" as MOS61
+}
+
+package Disposal {
+    usecase "Disposal Servo Motor 6V" as DSM
+    usecase "MOSFET (6V) #2" as MOS62
 }
 
 
-(Xbox Controller) --> Ad #black;text:black : Controller Inputs
+(Xbox Controller) ..> (ESP32-S3) #blue;text:blue : Receive BLE Controller Inputs
 
-
-'DRIVETRAIN
-Ad --> DT
-
-
-'COLLECTION
-Ad --> Col
-
-
-'COLORSENSOR
-ESP --> LV
-LV --> ESP #black;line.dashed;
-ESP --> NN #black;line.dashed;
-NN --> Pd #black;line.dashed;
-Pd --> ESP #black;line.dotted;
-ESP --> PS #black;line.dotted;
 
 'POWER
-B --> BC1
-B --> BC2
-BC1 --> Ad #black;text:black : Uses 5V
-BC2 --> ESP #black;text:black : Uses 3.3V
+B --> BC12 #black;text:black : Reduce to 12V
+B --> BC6 #black;text:black : Reduce to 6V
+B --> BC5 #black;text:black : Reduce to 5V
+
+BC12 --> L298N #black;text:black : 12V Supply
+L298N-> DC1 #black;text:black : Power Motor
+L298N --> DC2 #black;text:black : Power Motor
+
+BC5 --> (ESP32-S3) #black;text:black : Vin / 5V Pin
+
+BC6 --> SSM #black;text:black : Power Servo
+BC6 --> CSM #black;text:black : Power Servo
+BC6 --> DSM #black;text:black : Power Servo
+
+'Pins
+(ESP32-S3) ..> L298N #blue;text:blue : IN1, IN2, IN3, IN4, ENA (PWM), ENB (PWM)
+' IN1-->GPIO6, IN2-->GPIO7, IN3-->GPIO15, IN4-->GPIO16, ENA-->GPIO17, ENB-->GPIO18
+
+(ESP32-S3) ..> SSM #blue;text:blue : GPIO9 PWM
+(ESP32-S3) ..> CSM #blue;text:blue : GPIO10 PWM
+(ESP32-S3) ..> DSM #blue;text:blue : GPIO11 PWM
 
 
 @enduml
