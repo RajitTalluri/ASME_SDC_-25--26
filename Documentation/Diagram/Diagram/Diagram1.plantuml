@@ -2,9 +2,9 @@
 
 package Power {
 usecase "22 V Battery" as B
-usecase "12V Buck Converter" as BC12
-usecase "Buck Converter 6" as BC6
-usecase "Buck Converter 5" as BC5
+usecase "12V LM2596 Buck Converter" as BC12
+usecase "6V LM2596 Buck Converter" as BC6
+usecase "5V LM2596 Buck Converter" as BC5
 }
 
 package Drivetrain {
