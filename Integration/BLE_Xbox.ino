@@ -18,20 +18,6 @@ void onDisconnected(ControllerPtr ctl) {
     }
 }
 
-void setup() {
-    Serial.begin(115200);
-    BP32.setup(&onConnected, &onDisconnected); // tells library exact address of functions
-}
-
-// Receives controller data and processes the inputs
-void loop() {
-    BP32.update(); // checks for bluetooth data packets
-    if (myController && myController->isConnected()) { // Pass myController to function
-        processInputs(myController);
-    }
-    delay(10); // 10ms delay
-}
-
 void processInputs(ControllerPtr ctl) {
     // DIGITAL BUTTONS
     if (ctl->a())
@@ -62,4 +48,18 @@ void processInputs(ControllerPtr ctl) {
     if (dpad & DPAD_DOWN) Serial.println("DPAD Down");
     if (dpad & DPAD_RIGHT) Serial.println("DPAD Right");
     if (dpad & DPAD_LEFT) Serial.println("DPAD Left");
+}
+
+void setup() {
+    Serial.begin(115200);
+    BP32.setup(&onConnected, &onDisconnected); // tells library exact address of functions
+}
+
+// Receives controller data and processes the inputs
+void loop() {
+    BP32.update(); // checks for bluetooth data packets
+    if (myController && myController->isConnected()) { // Pass myController to function
+        processInputs(myController);
+    }
+    delay(10); // 10ms delay
 }
