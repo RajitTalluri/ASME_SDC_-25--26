@@ -1,0 +1,59 @@
+#include <Bluepad32.h>
+#include <ESP32Servo.h>
+
+// Pin configuration
+const int SERVO_PIN = 10;
+
+// Only 2 positions needed
+const int TRASH = 45;       // Adjust after testing
+const int RECYCLE = 135;    // Adjust after testing
+
+// Global objects
+Servo gateServo;
+GamepadPtr controller;
+
+// Controller callbacks
+void onConnectedController(GamepadPtr gp) {
+    controller = gp;
+    Serial.println("Xbox Controller Connected!");
+    Serial.println("LB = TRASH  |  RB = RECYCLE");
+}
+
+void onDisconnectedController(GamepadPtr gp) {
+    controller = nullptr;
+    Serial.println("Controller Disconnected");
+}
+
+void setup() {
+    Serial.begin(115200);
+    Serial.println("Trash/Recycle Sorter");
+    
+    // Initialize Bluepad32
+    BP32.setup(&onConnectedController, &onDisconnectedController);
+    BP32.forgetBluetoothKeys();
+    
+    // Initialize servo
+    gateServo.attach(SERVO_PIN);
+    gateServo.write(TRASH);  // Start at trash position
+    
+    Serial.println("Ready! Waiting for controller...");
+}
+
+void loop() {
+    BP32.update();
+    
+    if (controller && controller->isConnected()) {
+        
+        // Left Bumper = TRASH
+        if (controller->l1()) {
+            gateServo.write(TRASH);
+        }
+        
+        // Right Bumper = RECYCLE
+        else if (controller->r1()) {
+            gateServo.write(RECYCLE);
+        }
+    }
+    
+    delay(15);
+}
