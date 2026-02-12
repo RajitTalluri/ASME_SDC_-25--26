@@ -16,7 +16,7 @@ GamepadPtr controller;
 void onConnectedController(GamepadPtr gp) {
     controller = gp;
     Serial.println("Xbox Controller Connected!");
-    Serial.println("LB = TRASH  |  RB = RECYCLE");
+    Serial.println("D-Pad LEFT = TRASH  |  D-Pad RIGHT = RECYCLE");
 }
 
 void onDisconnectedController(GamepadPtr gp) {
@@ -44,14 +44,19 @@ void loop() {
     
     if (controller && controller->isConnected()) {
         
-        // Left Bumper = TRASH
-        if (controller->l1()) {
+        // Get D-Pad state
+        uint8_t dpad = controller->dpad();
+        
+        // D-Pad LEFT = TRASH
+        if (dpad == 0x08) {  // DPAD_LEFT
             gateServo.write(TRASH);
+            Serial.println("TRASH");
         }
         
-        // Right Bumper = RECYCLE
-        else if (controller->r1()) {
+        // D-Pad RIGHT = RECYCLE
+        else if (dpad == 0x02) {  // DPAD_RIGHT
             gateServo.write(RECYCLE);
+            Serial.println("RECYCLE");
         }
     }
     
