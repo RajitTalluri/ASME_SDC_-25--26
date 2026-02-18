@@ -1,65 +1,71 @@
-//#include <ESP32Servo.h>
 #include <Bluepad32.h>
 
-ControllerPtr myController = nullptr;  // initialze controller pointer to None
+ControllerPtr myController;
 
-// callback to assign controller pointer location, for controller connection
-void onConnected(ControllerPtr ctl) {
-  if (myController == nullptr) {
-    Serial.println("Controller Connected");
-    myController = ctl;
-  }
+void onConnectedController(ControllerPtr ctl) {
+  myController = ctl;
+  Serial.println("Xbox controller connected!");
 }
 
-void onDisconnected(ControllerPtr ctl) {
-    if (myController == ctl) {
-        Serial.println("Controller Disconnected");
-        myController = nullptr;
-    }
+void onDisconnectedController(ControllerPtr ctl) {
+  myController = nullptr;
+  Serial.println("Controller disconnected");
 }
 
 void setup() {
-    Serial.begin(115200);
-    BP32.setup(&onConnected, &onDisconnected); // tells library exact address of functions
+  Serial.begin(115200);
+  delay(2000);
+  BP32.setup(&onConnectedController, &onDisconnectedController);
+  BP32.forgetBluetoothKeys();
+  Serial.println("Waiting for controller...");
 }
 
-// Receives controller data and processes the inputs
 void loop() {
-    BP32.update(); // checks for bluetooth data packets
-    if (myController && myController->isConnected()) { // Pass myController to function
-        processInputs(myController);
-    }
-    delay(10); // 10ms delay
-}
+  BP32.update();
 
-void processInputs(ControllerPtr ctl) {
-    // DIGITAL BUTTONS
-    if (ctl->a())
-        Serial.println("Button A Pressed");
-    if (ctl->b())
-        Serial.println("Button B Pressed");
-    if (ctl->x())
-        Serial.println("Button X Pressed");
-    if (ctl->y())
-        Serial.println("Button Y Pressed");
-    
+  if (!myController || !myController->isConnected()) {
+    Serial.println("Controller not connected");
+    delay(1000);
+    return;
+  }
 
-    // ANALOG JOYSTICKS (-511 to 511)
-    int32_t stickX = ctl->axisX();
-    int32_t stickY = ctl->axisY();
+  // Buttons
+  if (myController->a())          Serial.println("A");
+  if (myController->b())          Serial.println("B");
+  if (myController->x())          Serial.println("X");
+  if (myController->y())          Serial.println("Y");
+  if (myController->l1())         Serial.println("LB");
+  if (myController->r1())         Serial.println("RB");
+  if (myController->l2())         Serial.println("LT");
+  if (myController->r2())         Serial.println("RT");
+  if (myController->thumbL())     Serial.println("Left Stick Click");
+  if (myController->thumbR())     Serial.println("Right Stick Click");
 
-    // TRIGGERS (Brake and Throttle) (0 to 1023)
-    int32_t leftTrigger = ctl->brake();    // LT
-    int32_t rightTrigger = ctl->throttle(); // RT
+  // DPad
+  uint8_t dpad = myController->dpad();
+  if (dpad & DPAD_UP)    Serial.println("DPad Up");
+  if (dpad & DPAD_DOWN)  Serial.println("DPad Down");
+  if (dpad & DPAD_LEFT)  Serial.println("DPad Left");
+  if (dpad & DPAD_RIGHT) Serial.println("DPad Right");
 
-    if (leftTrigger > 0 || rightTrigger > 0) {
-        Serial.printf("Triggers: LT=%d, RT=%d\n", leftTrigger, rightTrigger);
-    }
+  if (myController->miscHome())   Serial.println("Xbox Button");
+  if (myController->miscStart())  Serial.println("Start/Menu");
+  if (myController->miscSelect()) Serial.println("Select/View");
 
-    // DPAD
-    uint8_t dpad = ctl->dpad();
-    if (dpad & DPAD_UP) Serial.println("DPAD Up");
-    if (dpad & DPAD_DOWN) Serial.println("DPAD Down");
-    if (dpad & DPAD_RIGHT) Serial.println("DPAD Right");
-    if (dpad & DPAD_LEFT) Serial.println("DPAD Left");
+  // Analog sticks (only print if moved)
+  int lx = myController->axisX();
+  int ly = myController->axisY();
+  int rx = myController->axisRX();
+  int ry = myController->axisRY();
+
+  if (abs(lx) > 50 || abs(ly) > 50) {
+    Serial.print("Left Stick X: "); Serial.print(lx);
+    Serial.print(" Y: "); Serial.println(ly);
+  }
+  if (abs(rx) > 50 || abs(ry) > 50) {
+    Serial.print("Right Stick X: "); Serial.print(rx);
+    Serial.print(" Y: "); Serial.println(ry);
+  }
+
+  delay(100);
 }
