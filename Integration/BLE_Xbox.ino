@@ -19,8 +19,8 @@ void setup() {
   BP32.forgetBluetoothKeys();
   Serial.println("Waiting for controller...");
 
-  int leftDeadzone = 50;
-  int rightDeadzone = 50;
+  int leftDeadzone = 50; \\adjust as needed
+  int rightDeadzone = 50; \\adjust as needed
 }
 
 void loop() {
