@@ -1,0 +1,17 @@
+@startuml State Diagram for Color Sensor with Neural Network
+
+[*] --> Power_Init
+
+Power_Init : Power color sensor and initialize system
+Power_Init --> Read_Sensor
+
+Read_Sensor : Read live color sensor values
+Read_Sensor --> NN_Predict
+
+NN_Predict : Run NN and predict object type
+NN_Predict --> Command_Switch
+
+Command_Switch : Command physical switch
+Command_Switch --> Read_Sensor
+
+@enduml
