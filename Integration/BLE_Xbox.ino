@@ -67,5 +67,5 @@ void loop() {
     Serial.print(" Y: "); Serial.println(ry);
   }
 
-  delay(100);
+  delay(150);
 }
