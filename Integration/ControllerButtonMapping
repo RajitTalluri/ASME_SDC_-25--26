@@ -1,6 +1,13 @@
-Right Bumper - Pivot Right
-Left Bumper - Pivot Left
-Left D-Pad - Counter-Clockwise servo
+#Grabber
+Right Bumper - Open servo (direction?)
+Left Bumper - Close servo (direction?)
+Up D-Pad - Collection DC motor up
+Down D-Pad - Collection DC motor down
+
+Left D-Pad - Counter-Clockwise servo 90 degress both direction grabber
 Right D-Pad - Clockwise servo
-Left Joystick Up - Forward movement
-Left Joystick Down - Backward movement
+
+#Drivetrain
+Right Trigger - Pivot Right
+Left Trigger - Pivot Left
+Left Joystick - Movement figure out analog values for forward, backward, steering
