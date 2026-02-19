@@ -4,7 +4,7 @@ ControllerPtr myController;
 
 void onConnectedController(ControllerPtr ctl) {
   myController = ctl;
-  Serial.println("Xbox controller connected!");
+  Serial.println("Xbox controller connected");
 }
 
 void onDisconnectedController(ControllerPtr ctl) {
@@ -18,6 +18,9 @@ void setup() {
   BP32.setup(&onConnectedController, &onDisconnectedController);
   BP32.forgetBluetoothKeys();
   Serial.println("Waiting for controller...");
+
+  int leftDeadzone = 50; \\adjust as needed
+  int rightDeadzone = 50; \\adjust as needed
 }
 
 void loop() {
@@ -58,13 +61,13 @@ void loop() {
   int rx = myController->axisRX();
   int ry = myController->axisRY();
 
-  if (abs(lx) > 50 || abs(ly) > 50) {
+  if (abs(lx) > leftDeadzone || abs(ly) > leftDeadzone) {  
     Serial.print("Left Stick X: "); Serial.print(lx);
-    Serial.print(" Y: "); Serial.println(ly);
+    Serial.print(" Y: "); Serial.println(-ly);
   }
-  if (abs(rx) > 50 || abs(ry) > 50) {
+  if (abs(rx) > rightDeadzone || abs(ry) > rightDeadzone) {
     Serial.print("Right Stick X: "); Serial.print(rx);
-    Serial.print(" Y: "); Serial.println(ry);
+    Serial.print(" Y: "); Serial.println(-ry);
   }
 
   delay(100);
