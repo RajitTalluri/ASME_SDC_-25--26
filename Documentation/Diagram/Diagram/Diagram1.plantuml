@@ -24,8 +24,9 @@ package Sorting {
 }
 
 package Disposal {
-    usecase "Disposal Servo Motor 6V" as DSM
+    usecase "Disposal DC Motor 6V" as DSM
     usecase "MOSFET (6V) #2" as MOS62
+    usecase "Disposal Motor Driver?" as DMD
 }
 
 
@@ -45,7 +46,8 @@ BC5 --> (ESP32-S3) #black;text:black : Vin / 5V Pin
 
 BC6 --> SSM #black;text:black : Power Servo
 BC6 --> CSM #black;text:black : Power Servo
-BC6 --> DSM #black;text:black : Power Servo
+BC6 --> DMD #black;text:black : Power Disposal Motor Driver, LM298N?
+DMD --> DSM #black;text:black : Motor Drive Disposal Motor
 
 'Pins
 (ESP32-S3) ..> L298N #blue;text:blue : IN1, IN2, IN3, IN4, ENA (PWM), ENB (PWM)
@@ -53,7 +55,7 @@ BC6 --> DSM #black;text:black : Power Servo
 
 (ESP32-S3) ..> SSM #blue;text:blue : GPIO9 PWM
 (ESP32-S3) ..> CSM #blue;text:blue : GPIO10 PWM
-(ESP32-S3) ..> DSM #blue;text:blue : GPIO11 PWM
+(ESP32-S3) ..> DMD #blue;text:blue : GPIO11 PWM
 
 
 @enduml
