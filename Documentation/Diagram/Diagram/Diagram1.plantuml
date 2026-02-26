@@ -30,7 +30,7 @@ package Disposal {
 }
 
 
-(Xbox Controller) ..> (ESP32-S3) #blue;text:blue : Receive BLE Controller Inputs
+(Xbox Controller) ..> (ESP32-S3 Devkit) #blue;text:blue : Receive BLE Controller Inputs
 
 
 'POWER
@@ -42,7 +42,7 @@ BC12 --> L298N #black;text:black : 12V Supply
 L298N-> DC1 #black;text:black : Power Motor
 L298N --> DC2 #black;text:black : Power Motor
 
-BC5 --> (ESP32-S3) #black;text:black : Vin / 5V Pin
+BC5 --> (ESP32-S3 Devkit) #black;text:black : Vin / 5V Pin
 
 BC6 --> SSM #black;text:black : Power Servo
 BC6 --> CSM #black;text:black : Power Servo
@@ -50,12 +50,12 @@ BC6 --> DMD #black;text:black : Power Disposal Motor Driver, LM298N?
 DMD --> DSM #black;text:black : Motor Drive Disposal Motor
 
 'Pins
-(ESP32-S3) ..> L298N #blue;text:blue : IN1, IN2, IN3, IN4, ENA (PWM), ENB (PWM)
+(ESP32-S3 Devkit) ..> L298N #blue;text:blue : IN1, IN2, IN3, IN4, ENA (PWM), ENB (PWM)
 ' IN1-->GPIO6, IN2-->GPIO7, IN3-->GPIO15, IN4-->GPIO16, ENA-->GPIO17, ENB-->GPIO18
 
-(ESP32-S3) ..> SSM #blue;text:blue : GPIO9 PWM
-(ESP32-S3) ..> CSM #blue;text:blue : GPIO10 PWM
-(ESP32-S3) ..> DMD #blue;text:blue : GPIO11 PWM
+(ESP32-S3 Devkit) ..> SSM #blue;text:blue : GPIO9 PWM
+(ESP32-S3 Devkit) ..> CSM #blue;text:blue : GPIO10 PWM
+(ESP32-S3 Devkit) ..> DMD #blue;text:blue : GPIO11 PWM
 
 
 @enduml
