@@ -1,80 +1,91 @@
 #include <Bluepad32.h>
+#include <ESP32Servo.h>
 
 ControllerPtr myController;
 
 // DEADZONES
-int leftDeadzone = 50; // adjust as needed
-int rightDeadzone = 50; // adjust as needed
-
+int leftStickDzone = 50; // adjust as needed
+int rightStickDzone = 50; // adjust as needed
+int leftTriggerDzone = 50; // adjust as needed
+int rightTriggerDzone = 50; // adjust as needed
 
 // DRIVETRAIN - L298n MOTOR COTNROL
-int pivotSpeed = 200; // Adjust as needed (0-255)
-
-int Lmotorpin1 = 5;
-int Lmotorpin2 = 6;
+int LFmotorpin1 = 5;
+int LBmotorpin2 = 6;
 int LmotorENA = 7; // PWM pin
 
-int Rmotorpin1 = 15;
-int Rmotorpin2 = 16;
+int RFmotorpin1 = 15;
+int RBmotorpin2 = 16;
 int RmotorENA = 17; // PWM pin
+
+// SERVOS
+Servo grabberServo;
+int grabberServoPin = 18; // adjust if needed
+Servo sorterServo;
+int sorterServoPin = 19; // adjust if needed
+
 
 // MOTOR HELPER FUNCTIONS
 void ALLMotorSTOP(int maxSpeed) {
-  digitalWrite(Lmotorpin1, LOW);
-  digitalWrite(Lmotorpin2, LOW);
+  digitalWrite(LFmotorpin1, LOW);
+  digitalWrite(LBmotorpin2, LOW);
   analogWrite(LmotorENA, maxSpeed);
-
-  digitalWrite(Rmotorpin1, LOW);
-  digitalWrite(Rmotorpin2, LOW);
+  
+  digitalWrite(RFmotorpin1, LOW);
+  digitalWrite(RBmotorpin2, LOW);
   analogWrite(RmotorENA, maxSpeed);
 }
 
+
 void leftPIVOT(int pivotSpeed) {
-  digitalWrite(Lmotorpin1, LOW); // L backward
-  digitalWrite(Lmotorpin2, HIGH);
+  digitalWrite(LFmotorpin1, LOW); // L backward
+  digitalWrite(LBmotorpin2, HIGH);
   analogWrite(LmotorENA, pivotSpeed);
 
-  digitalWrite(Rmotorpin1, HIGH); // R forward
-  digitalWrite(Rmotorpin2, LOW);
+  digitalWrite(RFmotorpin1, HIGH); // R forward
+  digitalWrite(RBmotorpin2, LOW);
   analogWrite(RmotorENA, pivotSpeed);
 }
+
 
 void rightPIVOT(int pivotSpeed) {
-  digitalWrite(Lmotorpin1, HIGH); // L forward
-  digitalWrite(Lmotorpin2, LOW);
+  digitalWrite(LFmotorpin1, HIGH); // L forward
+  digitalWrite(LBmotorpin2, LOW);
   analogWrite(LmotorENA, pivotSpeed);
 
-  digitalWrite(Rmotorpin1, LOW); // R backward
-  digitalWrite(Rmotorpin2, HIGH);
+  digitalWrite(RFmotorpin1, LOW); // R backward
+  digitalWrite(RBmotorpin2, HIGH);
   analogWrite(RmotorENA, pivotSpeed);
 }
 
+
 void setMotors(int leftSpeed, int rightSpeed) {
-  if (leftSpeed > 50) {
-    digitalWrite(Lmotorpin1, HIGH); // L forward
-    digitalWrite(Lmotorpin2, LOW);
+  if (leftSpeed > leftStickDzone) {
+    digitalWrite(LFmotorpin1, HIGH); // L forward
+    digitalWrite(LBmotorpin2, LOW);
     analogWrite(LmotorENA, leftSpeed);
-  } else if (leftSpeed < -50) {
-    digitalWrite(Lmotorpin1, LOW); // L backward
-    digitalWrite(Lmotorpin2, HIGH);
+  } else if (leftSpeed < -leftStickDzone) {
+    digitalWrite(LFmotorpin1, LOW); // L backward
+    digitalWrite(LBmotorpin2, HIGH);
     analogWrite(LmotorENA, -leftSpeed);
   } else {
-    digitalWrite(Lmotorpin1, LOW);
-    digitalWrite(Lmotorpin2, LOW);
+    digitalWrite(LFmotorpin1, LOW);
+    digitalWrite(LBmotorpin2, LOW);
     analogWrite(LmotorENA, 0);
   }
 
-  if (rightSpeed > 50) {
-    digitalWrite(Rmotorpin1, HIGH); // R forward
-    digitalWrite(Rmotorpin2, LOW);
+
+  if (rightSpeed > rightStickDzone) {
+    digitalWrite(RFmotorpin1, HIGH); // R forward
+    digitalWrite(RBmotorpin2, LOW);
     analogWrite(RmotorENA, rightSpeed);
-  } else if (rightSpeed < -50) {
-    digitalWrite(Rmotorpin1, LOW); // R backward
-    digitalWrite(Rmotorpin2, HIGH);
+  } else if (rightSpeed < -rightStickDzone) {
+    digitalWrite(RFmotorpin1, LOW); // R backward
+    digitalWrite(RBmotorpin2, HIGH);
     analogWrite(RmotorENA, -rightSpeed);
   } else {
-    digitalWrite(Rmotorpin1, LOW);
-    digitalWrite(Rmotorpin2, LOW);
+    digitalWrite(RFmotorpin1, LOW);
+    digitalWrite(RBmotorpin2, LOW);
     analogWrite(RmotorENA, 0);
   }
 }
@@ -99,13 +110,16 @@ void setup() {
   BP32.forgetBluetoothKeys();
   Serial.println("Waiting for controller...");
 
-  pinMode(Lmotorpin1, OUTPUT);
-  pinMode(Lmotorpin2, OUTPUT);
+  pinMode(LFmotorpin1, OUTPUT);
+  pinMode(LBmotorpin2, OUTPUT);
   pinMode(LmotorENA, OUTPUT);
-  pinMode(Rmotorpin1, OUTPUT);
-  pinMode(Rmotorpin2, OUTPUT);
+  pinMode(RFmotorpin1, OUTPUT);
+  pinMode(RBmotorpin2, OUTPUT);
   pinMode(RmotorENA, OUTPUT);
   ALLMotorSTOP(0);
+
+  grabberServo.attach(grabberServoPin);
+  sorterServo.attach(sorterServoPin);
 }
 
 
@@ -123,8 +137,14 @@ void loop() {
   if (myController->b())          Serial.println("B");
   if (myController->x())          Serial.println("X");
   if (myController->y())          Serial.println("Y");
-  if (myController->l1())         Serial.println("LB");
-  if (myController->r1())         Serial.println("RB");
+  if (myController->l1()) {
+    grabberServo.write(0); // Move grabber servo to 0 degrees (open)
+    Serial.println("LB");
+  }
+  if (myController->r1()) {
+    grabberServo.write(180); // Move grabber servo to 180 degrees (close)
+    Serial.println("RB");
+  }
   if (myController->l2())         Serial.println("LT");
   if (myController->r2())         Serial.println("RT");
   if (myController->thumbL())     Serial.println("Left Stick Click");
@@ -134,9 +154,14 @@ void loop() {
   uint8_t dpad = myController->dpad();
   if (dpad & DPAD_UP)    Serial.println("DPad Up");
   if (dpad & DPAD_DOWN)  Serial.println("DPad Down");
-  if (dpad & DPAD_LEFT)  Serial.println("DPad Left");
-  if (dpad & DPAD_RIGHT) Serial.println("DPad Right");
-
+  if (dpad & DPAD_LEFT) {
+    sorterServo.write(0); // Move sorter servo to 0 degrees (left)
+    Serial.println("DPad Left");
+  }
+  if (dpad & DPAD_RIGHT) {
+    sorterServo.write(180); // Move sorter servo to 180 degrees (right)
+    Serial.println("DPad Right");
+  }
   if (myController->miscHome())   Serial.println("Xbox Button");
   if (myController->miscStart())  Serial.println("Start/Menu");
   if (myController->miscSelect()) Serial.println("Select/View");
@@ -147,12 +172,15 @@ void loop() {
   int rx = myController->axisRX();
   int ry = myController->axisRY();
 
-  // Drivetrain Pivots
-  if (myController->L1()) {
-    leftPIVOT(speed);
-  } else if (myController->R1()) {
-    rightPIVOT(speed);
-  } else if (abs(lx) > leftDeadzone || abs(ly) > leftDeadzone) {
+  // Drivetrain Pivots - LT and RT triggers for gradual speed control
+  int lt = myController->brake();  // Get LT trigger value (0-255)
+  int rt = myController->throttle();  // Get RT trigger value (0-255)
+
+  if (lt > leftTriggerDzone) {  // LT trigger with deadzone
+    leftPIVOT(lt);
+  } else if (rt > rightTriggerDzone) {  // RT trigger with deadzone
+    rightPIVOT(rt);
+  } else if (abs(lx) > leftStickDzone || abs(ly) > leftStickDzone) {
       int leftSpeed  = constrain(map(ly + lx, -512, 512, -255, 255), -255, 255);
       int rightSpeed = constrain(map(ly - lx, -512, 512, -255, 255), -255, 255);
       setMotors(leftSpeed, rightSpeed);
@@ -165,95 +193,10 @@ void loop() {
     Serial.print("Left Stick X: "); Serial.print(lx);
     Serial.print(" Y: "); Serial.println(-ly);
   } */
-  if (abs(rx) > rightDeadzone || abs(ry) > rightDeadzone) {
+  if (abs(rx) > rightStickDzone || abs(ry) > rightStickDzone) {
     Serial.print("Right Stick X: "); Serial.print(rx);
     Serial.print(" Y: "); Serial.println(-ry);
   }
 
   delay(100);
 } 
-
-
-
-
-
-
-void forward(int maxSpeed) {
-  digitalWrite(Lmotorpin1, HIGH); // L forward
-  digitalWrite(Lmotorpin2, LOW);
-  analogWrite(LmotorENA, maxSpeed);
-
-  digitalWrite(Rmotorpin1, HIGH); // R forward
-  digitalWrite(Rmotorpin2, LOW);
-  analogWrite(RmotorENA, maxSpeed);
-}
-
-void backward(int maxSpeed) {
-  digitalWrite(Lmotorpin1, LOW); // L backward
-  digitalWrite(Lmotorpin2, HIGH);
-  analogWrite(LmotorENA, maxSpeed);
-
-  digitalWrite(Rmotorpin1, LOW); // R backward
-  digitalWrite(Rmotorpin2, HIGH);
-  analogWrite(RmotorENA, maxSpeed);
-}
-
-void smallTurnLeft(int maxSpeed, int smallTurnSpeed) {
-  digitalWrite(Lmotorpin1, HIGH); // L forward
-  digitalWrite(Lmotorpin2, LOW);
-  analogWrite(LmotorENA, smallTurnSpeed); // L slower
-
-  digitalWrite(Rmotorpin1, HIGH); // R forward
-  digitalWrite(Rmotorpin2, LOW);
-  analogWrite(RmotorENA, maxSpeed); // R max speed
-}
-
-void smallTurnRight(int maxSpeed, int smallTurnSpeed) {
-  digitalWrite(Lmotorpin1, HIGH); // L forward
-  digitalWrite(Lmotorpin2, LOW);
-  analogWrite(LmotorENA, maxSpeed); // L max speed
-
-  digitalWrite(Rmotorpin1, HIGH); // R forward
-  digitalWrite(Rmotorpin2, LOW);
-  analogWrite(RmotorENA, smallTurnSpeed); // R slower
-}
-
-void mediumTurnLeft(int maxSpeed, int mediumTurnSpeed) {
-  digitalWrite(Lmotorpin1, HIGH); // L forward
-  digitalWrite(Lmotorpin2, LOW);
-  analogWrite(LmotorENA, mediumTurnSpeed); // L slower
-
-  digitalWrite(Rmotorpin1, HIGH); // R forward
-  digitalWrite(Rmotorpin2, LOW);
-  analogWrite(RmotorENA, maxSpeed); // R max speed
-}
-
-void mediumTurnRight(int maxSpeed, int mediumTurnSpeed) {
-  digitalWrite(Lmotorpin1, HIGH); // L forward
-  digitalWrite(Lmotorpin2, LOW);
-  analogWrite(LmotorENA, maxSpeed); // L max speed
-
-  digitalWrite(Rmotorpin1, HIGH); // R forward
-  digitalWrite(Rmotorpin2, LOW);
-  analogWrite(RmotorENA, mediumTurnSpeed); // R slower
-}
-
-void bigTurnLeft(int maxSpeed, int bigTurnSpeed) {
-  digitalWrite(Lmotorpin1, HIGH); // L forward
-  digitalWrite(Lmotorpin2, LOW);
-  analogWrite(LmotorENA, bigTurnSpeed); // L slower
-
-  digitalWrite(Rmotorpin1, HIGH); // R forward
-  digitalWrite(Rmotorpin2, LOW);
-  analogWrite(RmotorENA, maxSpeed); // R max speed
-}
-
-void bigTurnRight(int maxSpeed, int bigTurnSpeed) {
-  digitalWrite(Lmotorpin1, HIGH); // L forward
-  digitalWrite(Lmotorpin2, LOW);
-  analogWrite(LmotorENA, maxSpeed); // L max speed
-
-  digitalWrite(Rmotorpin1, HIGH); // R forward
-  digitalWrite(Rmotorpin2, LOW);
-  analogWrite(RmotorENA, bigTurnSpeed); // R slower
-}
