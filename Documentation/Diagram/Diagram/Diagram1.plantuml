@@ -13,17 +13,17 @@ package Drivetrain {
     usecase "12V DC Motor 2" as DC2
 }
 
-package Collection {
+package Disposal {
     usecase "Sorting Servo Motor 6V" as SSM
     usecase "MOSFET (12V)" as MOS12
 }
 
-package Sorting {
+package Collection {
     usecase "Collection Servo Motor 6V" as CSM
     usecase "MOSFET (6V) #1" as MOS61
 }
 
-package Disposal {
+package Sorting {
     usecase "Disposal DC Motor 6V" as DSM
     usecase "MOSFET (6V) #2" as MOS62
     usecase "Disposal Motor Driver?" as DMD

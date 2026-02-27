@@ -18,6 +18,11 @@ int RFmotorpin1 = 15;
 int RBmotorpin2 = 16;
 int RmotorENA = 17; // PWM pin
 
+int Collectionmotorpin1 = 40;
+int Collectionmotorpin2 = 41;
+int CollectionmotorENA = 42; // PWM pin
+int CollectionmotorSpeed = 255; // adjust as needed
+
 // SERVOS
 Servo grabberServo;
 int grabberServoPin = 18; // adjust if needed
@@ -116,6 +121,9 @@ void setup() {
   pinMode(RFmotorpin1, OUTPUT);
   pinMode(RBmotorpin2, OUTPUT);
   pinMode(RmotorENA, OUTPUT);
+  pinMode(Collectionmotorpin1, OUTPUT);
+  pinMode(Collectionmotorpin2, OUTPUT);
+  pinMode(CollectionmotorENA, OUTPUT);
   ALLMotorSTOP(0);
 
   grabberServo.attach(grabberServoPin);
@@ -152,8 +160,18 @@ void loop() {
 
   // DPad
   uint8_t dpad = myController->dpad();
-  if (dpad & DPAD_UP)    Serial.println("DPad Up");
-  if (dpad & DPAD_DOWN)  Serial.println("DPad Down");
+  if (dpad & DPAD_UP) {
+      digitalWrite(Collectionmotorpin1, HIGH); // Collection forward
+      digitalWrite(Collectionmotorpin2, LOW);
+      analogWrite(CollectionmotorENA, CollectionmotorSpeed);
+      Serial.println("DPad Up");
+  }    
+  if (dpad & DPAD_DOWN) {
+    digitalWrite(Collectionmotorpin1, LOW); // Collection backward
+    digitalWrite(Collectionmotorpin2, HIGH);
+    analogWrite(CollectionmotorENA, CollectionmotorSpeed);
+    Serial.println("DPad Down");
+  }
   if (dpad & DPAD_LEFT) {
     sorterServo.write(0); // Move sorter servo to 0 degrees (left)
     Serial.println("DPad Left");
