@@ -12,11 +12,11 @@ int rightTriggerDzone = 50; // adjust as needed
 // DRIVETRAIN - L298n MOTOR COTNROL
 int LFmotorpin1 = 39; // In 1 pin
 int LBmotorpin2 = 40; // In 2 pin
-int LmotorENA = 20; // PWM 1 pin
+int LmotorENA = 13; // PWM 1 pin (20)
 
 int RFmotorpin1 = 41; // In 3 pin
 int RBmotorpin2 = 42; // In 4 pin
-int RmotorENA = 21; // PWM 2 pin
+int RmotorENA = 12; // PWM 2 pin (21)
 
 int Collectionmotorpin1 = 16; // In 5 pin
 int Collectionmotorpin2 = 15; // In 6 pin
