@@ -10,24 +10,24 @@ int leftTriggerDzone = 50; // adjust as needed
 int rightTriggerDzone = 50; // adjust as needed
 
 // DRIVETRAIN - L298n MOTOR COTNROL
-int LFmotorpin1 = 5;
-int LBmotorpin2 = 6;
-int LmotorENA = 7; // PWM pin
+int LFmotorpin1 = 39; // In 1 pin
+int LBmotorpin2 = 40; // In 2 pin
+int LmotorENA = 20; // PWM 1 pin
 
-int RFmotorpin1 = 15;
-int RBmotorpin2 = 16;
-int RmotorENA = 17; // PWM pin
+int RFmotorpin1 = 41; // In 3 pin
+int RBmotorpin2 = 42; // In 4 pin
+int RmotorENA = 21; // PWM 2 pin
 
-int Collectionmotorpin1 = 40;
-int Collectionmotorpin2 = 41;
-int CollectionmotorENA = 42; // PWM pin
+int Collectionmotorpin1 = 16; // In 5 pin
+int Collectionmotorpin2 = 15; // In 6 pin
+int CollectionmotorENA = 47; // PWM 3 pin
 int CollectionmotorSpeed = 255; // adjust as needed
 
 // SERVOS
 Servo grabberServo;
-int grabberServoPin = 18; // adjust if needed
+int grabberServoPin = 7; // adjust if needed, In 7 pin
 Servo sorterServo;
-int sorterServoPin = 19; // adjust if needed
+int sorterServoPin = 8; // adjust if needed, In 8 pin
 
 
 // MOTOR HELPER FUNCTIONS
@@ -127,7 +127,9 @@ void setup() {
   ALLMotorSTOP(0);
 
   grabberServo.attach(grabberServoPin);
+  grabberServo.write(90);
   sorterServo.attach(sorterServoPin);
+  grabberServo.write(90);
 }
 
 
@@ -199,8 +201,10 @@ void loop() {
   } else if (rt > rightTriggerDzone) {  // RT trigger with deadzone
     rightPIVOT(rt);
   } else if (abs(lx) > leftStickDzone || abs(ly) > leftStickDzone) {
-      int leftSpeed  = constrain(map(ly + lx, -512, 512, -255, 255), -255, 255);
-      int rightSpeed = constrain(map(ly - lx, -512, 512, -255, 255), -255, 255);
+    int leftSpeed  = constrain(map(ly + lx, -1022, 1022, -255, 255), -255, 255);
+    int rightSpeed = constrain(map(ly - lx, -1022, 1022, -255, 255), -255, 255);
+    Serial.println(leftSpeed);
+    Serial.println(rightSpeed);
       setMotors(leftSpeed, rightSpeed);
   } else {
     ALLMotorSTOP(0);
