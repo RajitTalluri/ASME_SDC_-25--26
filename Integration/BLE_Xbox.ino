@@ -25,7 +25,7 @@ int CollectionmotorSpeed = 255; // adjust as needed
 
 // SERVOS
 Servo grabberServo;
-int grabberServoPin = 1; // adjust if needed, In 7 pin
+int grabberServoPin = 7; // adjust if needed, In 7 pin
 Servo sorterServo;
 int sorterServoPin = 19; // adjust if needed, In 8 pin
 
@@ -43,8 +43,8 @@ void ALLMotorSTOP(int maxSpeed) {
 
 
 void leftPIVOT(int pivotSpeed) {
-  digitalWrite(LFmotorpin1, LOW); // L backward
-  digitalWrite(LBmotorpin2, HIGH);
+  digitalWrite(LFmotorpin1, HIGH); // L backward
+  digitalWrite(LBmotorpin2, LOW);
   analogWrite(LmotorENA, pivotSpeed);
 
   digitalWrite(RFmotorpin1, HIGH); // R forward
@@ -54,8 +54,8 @@ void leftPIVOT(int pivotSpeed) {
 
 
 void rightPIVOT(int pivotSpeed) {
-  digitalWrite(LFmotorpin1, HIGH); // L forward
-  digitalWrite(LBmotorpin2, LOW);
+  digitalWrite(LFmotorpin1, LOW); // L forward
+  digitalWrite(LBmotorpin2, HIGH);
   analogWrite(LmotorENA, pivotSpeed);
 
   digitalWrite(RFmotorpin1, LOW); // R backward
@@ -66,12 +66,12 @@ void rightPIVOT(int pivotSpeed) {
 
 void setMotors(int leftSpeed, int rightSpeed) {
   if (leftSpeed > leftStickDzone) {
-    digitalWrite(LFmotorpin1, HIGH); // L forward
-    digitalWrite(LBmotorpin2, LOW);
+    digitalWrite(LFmotorpin1, LOW); // L forward
+    digitalWrite(LBmotorpin2, HIGH);
     analogWrite(LmotorENA, leftSpeed);
   } else if (leftSpeed < -leftStickDzone) {
-    digitalWrite(LFmotorpin1, LOW); // L backward
-    digitalWrite(LBmotorpin2, HIGH);
+    digitalWrite(LFmotorpin1, HIGH); // L backward
+    digitalWrite(LBmotorpin2, LOW);
     analogWrite(LmotorENA, -leftSpeed);
   } else {
     digitalWrite(LFmotorpin1, LOW);
@@ -193,19 +193,20 @@ void loop() {
   int ry = myController->axisRY();
 
   // Drivetrain Pivots - LT and RT triggers for gradual speed control
-  int lt = myController->brake();  // Get LT trigger value (0-255)
-  int rt = myController->throttle();  // Get RT trigger value (0-255)
+  int lt = map(myController->brake(), 0, 1023, 0, 255); // Get LT trigger value (0-1023)
+  int rt = map(myController->throttle(), 0, 1023, 0, 255); // Get LT trigger value (0-1023)
 
   if (lt > leftTriggerDzone) {  // LT trigger with deadzone
     leftPIVOT(lt);
   } else if (rt > rightTriggerDzone) {  // RT trigger with deadzone
     rightPIVOT(rt);
   } else if (abs(lx) > leftStickDzone || abs(ly) > leftStickDzone) {
-    int leftSpeed  = constrain(map(ly + lx, -1022, 1022, -255, 255), -255, 255);
-    int rightSpeed = constrain(map(ly - lx, -1022, 1022, -255, 255), -255, 255);
-    Serial.println(leftSpeed);
-    Serial.println(rightSpeed);
-      setMotors(leftSpeed, rightSpeed);
+      // Map sticks to -255 to 255 first
+      int mappedY = map(ly, -512, 512, 255, -255); // inverted Y
+      int mappedX = map(lx, -512, 512, -255, 255);
+      int leftSpeed  = constrain(mappedY + mappedX, -255, 255);
+      int rightSpeed = constrain(mappedY - mappedX, -255, 255);
+    setMotors(leftSpeed, rightSpeed);
   } else {
     ALLMotorSTOP(0);
   }
