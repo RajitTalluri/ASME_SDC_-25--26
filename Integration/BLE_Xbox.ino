@@ -12,11 +12,11 @@ int rightTriggerDzone = 50; // adjust as needed
 // DRIVETRAIN - L298n MOTOR COTNROL
 int LFmotorpin1 = 1; // In 1 pin
 int LBmotorpin2 = 2; // In 2 pin
-int LmotorENA = 3; // PWM 1 pin (20)
+int LmotorENA = 3; // PWM, 3 pin
 
 int RFmotorpin1 = 4; // In 3 pin
 int RBmotorpin2 = 5; // In 4 pin
-int RmotorENA = 6; // PWM 2 pin (21)
+int RmotorENA = 6; // PWM, 6 pin (21)
 
 int Collectionmotorpin1 = 15; // In 5 pin
 int Collectionmotorpin2 = 16; // In 6 pin
@@ -25,9 +25,9 @@ int CollectionmotorSpeed = 255; // adjust as needed
 
 // SERVOS
 Servo grabberServo;
-int grabberServoPin = 7; // adjust if needed, In 7 pin
+int grabberServoPin = 21; // find compatible pin
 Servo sorterServo;
-int sorterServoPin = 19; // adjust if needed, In 8 pin
+int sorterServoPin = 47; // find compatible pin
 
 
 // MOTOR HELPER FUNCTIONS
