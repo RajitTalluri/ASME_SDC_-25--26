@@ -12,20 +12,23 @@ int rightTriggerDzone = 50; // adjust as needed
 // DRIVETRAIN - L298n MOTOR COTNROL
 int LFmotorpin1 = 1; // In 1 pin
 int LBmotorpin2 = 2; // In 2 pin
-int LmotorENA = 3; // PWM, 3 pin
+int LmotorENA = 3; // PWM, ? pin
 
 int RFmotorpin1 = 4; // In 3 pin
 int RBmotorpin2 = 5; // In 4 pin
-int RmotorENA = 6; // PWM, 6 pin (21)
+int RmotorENA = 6; // PWM, ? pin (21)
 
-int Collectionmotorpin1 = 15; // In 5 pin
-int Collectionmotorpin2 = 16; // In 6 pin
-int CollectionmotorENA = 17; // PWM 3 pin
+int Collectionmotorpin1 = 10; // In 1 pin
+int Collectionmotorpin2 = 11; // In 2 pin
+int CollectionmotorENA = 12; // PWM ? pin
 int CollectionmotorSpeed = 255; // adjust as needed
+int Disposalmotorpin1 = ??; // In 3 pin
+int Disposalmotorpin2 = ??; // In 4 pin
+int DisposalmotorENA = ??; // PWM ? pin
 
 // SERVOS
 Servo grabberServo;
-int grabberServoPin = 21; // find compatible pin
+int grabberServoPin = 13; // find compatible pin
 Servo sorterServo;
 int sorterServoPin = 47; // find compatible pin
 
@@ -124,6 +127,9 @@ void setup() {
   pinMode(Collectionmotorpin1, OUTPUT);
   pinMode(Collectionmotorpin2, OUTPUT);
   pinMode(CollectionmotorENA, OUTPUT);
+  pinMode(Disposalmotorpin1, OUTPUT);
+  pinMode(Disposalmotorpin2, OUTPUT);
+  pinMode(DisposalmotorENA, OUTPUT);
   ALLMotorSTOP(0);
 
   grabberServo.attach(grabberServoPin);
@@ -143,8 +149,21 @@ void loop() {
   }
 
   // Buttons
-  if (myController->a())          Serial.println("A");
-  if (myController->b())          Serial.println("B");
+  if (myController->a()) {
+    Serial.println("A");
+    digitalWrite(Disposalmotorpin1, HIGH); // Disposal forward
+    digitalWrite(Disposalmotorpin2, LOW);
+    analogWrite(DisposalmotorENA, CollectionmotorSpeed);
+  }        
+
+  if (myController->b()) {
+    {
+    Serial.println("B");
+    digitalWrite(Disposalmotorpin1, LOW);
+    digitalWrite(Disposalmotorpin2, HIGH); // Disposal backward
+    analogWrite(DisposalmotorENA, CollectionmotorSpeed);
+  }        
+  }
   if (myController->x())          Serial.println("X");
   if (myController->y())          Serial.println("Y");
   if (myController->l1()) {
