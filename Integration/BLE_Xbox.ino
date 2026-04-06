@@ -28,7 +28,7 @@ int CollectionmotorSpeed = 255; // adjust as needed
 int Disposalmotorpin1 = 3; // In 7 pin
 int Disposalmotorpin2 = 9; // In 8 pin
 int DisposalmotorENA = 10; // PWM, END pin
-int CollectionmotorSpeed = 100; // slower for more torque, need to test
+int CollectionmotorSpeed = 100; // slower for more torque
 
 
 // SERVOS
