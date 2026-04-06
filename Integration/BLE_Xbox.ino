@@ -3,6 +3,9 @@
 
 ControllerPtr myController;
 
+// EG - extra gpio 13,12,11
+// EN - enable
+
 // DEADZONES
 int leftStickDzone = 50; // adjust as needed
 int rightStickDzone = 50; // adjust as needed
@@ -10,27 +13,29 @@ int leftTriggerDzone = 50; // adjust as needed
 int rightTriggerDzone = 50; // adjust as needed
 
 // DRIVETRAIN - L298n MOTOR COTNROL
-int LFmotorpin1 = 1; // In 1 pin
-int LBmotorpin2 = 2; // In 2 pin
-int LmotorENA = 3; // PWM, ? pin
+int LFmotorpin1 = 15; // In 1 pin
+int LBmotorpin2 = 16; // In 2 pin
+int LmotorENA = 7; // PWM, ENA pin
 
-int RFmotorpin1 = 4; // In 3 pin
-int RBmotorpin2 = 5; // In 4 pin
-int RmotorENA = 6; // PWM, ? pin (21)
+int RFmotorpin1 = 17; // In 3 pin
+int RBmotorpin2 = 2; // In 4 pin
+int RmotorENA = 1; // PWM, ENB pin
 
-int Collectionmotorpin1 = 10; // In 1 pin
-int Collectionmotorpin2 = 11; // In 2 pin
-int CollectionmotorENA = 12; // PWM ? pin
+int Collectionmotorpin1 = 5; // In 5 pin
+int Collectionmotorpin2 = 4; // In 6 pin
+int CollectionmotorENA = 6; // PWM, ENC pin
 int CollectionmotorSpeed = 255; // adjust as needed
-int Disposalmotorpin1 = ??; // In 3 pin
-int Disposalmotorpin2 = ??; // In 4 pin
-int DisposalmotorENA = ??; // PWM ? pin
+int Disposalmotorpin1 = 3; // In 7 pin
+int Disposalmotorpin2 = 9; // In 8 pin
+int DisposalmotorENA = 10; // PWM, END pin
+int CollectionmotorSpeed = 100; // slower for more torque
+
 
 // SERVOS
 Servo grabberServo;
-int grabberServoPin = 13; // find compatible pin
+int grabberServoPin = 41; // S1 labeled as PWM on PCB
 Servo sorterServo;
-int sorterServoPin = 47; // find compatible pin
+int sorterServoPin = 42; // S2 labeled as PWM on PCB
 
 
 // MOTOR HELPER FUNCTIONS
@@ -153,7 +158,7 @@ void loop() {
     Serial.println("A");
     digitalWrite(Disposalmotorpin1, HIGH); // Disposal forward
     digitalWrite(Disposalmotorpin2, LOW);
-    analogWrite(DisposalmotorENA, CollectionmotorSpeed);
+    analogWrite(DisposalmotorENA, DisposalmotorSpeed);
   }        
 
   if (myController->b()) {
@@ -161,7 +166,7 @@ void loop() {
     Serial.println("B");
     digitalWrite(Disposalmotorpin1, LOW);
     digitalWrite(Disposalmotorpin2, HIGH); // Disposal backward
-    analogWrite(DisposalmotorENA, CollectionmotorSpeed);
+    analogWrite(DisposalmotorENA, DisposalmotorSpeed);
   }        
   }
   if (myController->x())          Serial.println("X");
