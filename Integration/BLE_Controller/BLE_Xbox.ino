@@ -13,22 +13,22 @@ int leftTriggerDzone = 50; // adjust as needed
 int rightTriggerDzone = 50; // adjust as needed
 
 // DRIVETRAIN - L298n MOTOR COTNROL
-int LFmotorpin1 = 15; // In 1 pin
-int LBmotorpin2 = 16; // In 2 pin
-int LmotorENA = 7; // PWM, ENA pin
+int Lmotorpin1 = 5; // In 1 pin | 15
+int Lmotorpin2 = 4; // In 2 pin | 16
+int LmotorENA = 6; // PWM, ENA pin | 7
 
-int RFmotorpin1 = 17; // In 3 pin
-int RBmotorpin2 = 2; // In 4 pin
-int RmotorENA = 1; // PWM, ENB pin
+int Rmotorpin1 = 3; // In 3 pin | 17 
+int Rmotorpin2 = 9; // In 4 pin | 2
+int RmotorENA = 10; // PWM, ENB pin | 1
 
-int Collectionmotorpin1 = 5; // In 5 pin
-int Collectionmotorpin2 = 4; // In 6 pin
-int CollectionmotorENA = 6; // PWM, ENC pin
-int CollectionmotorSpeed = 255; // adjust as needed
-int Disposalmotorpin1 = 3; // In 7 pin
-int Disposalmotorpin2 = 9; // In 8 pin
-int DisposalmotorENA = 10; // PWM, END pin
-int CollectionmotorSpeed = 100; // slower for more torque
+int Collectionmotorpin1 = 15; // In 5 pin | 5
+int Collectionmotorpin2 = 16; // In 6 pin | 4
+int CollectionmotorENA = 7; // PWM, ENC pin | 6
+int CollectionmotorSpeed = 150; // adjust as needed 
+int Disposalmotorpin1 = 17; // In 7 pin | 3
+int Disposalmotorpin2 = 2; // In 8 pin | 9
+int DisposalmotorENA = 1; // PWM, END pin | 10
+int DisposalmotorSpeed = 100; // slower for more torque
 
 
 // SERVOS
@@ -40,65 +40,65 @@ int sorterServoPin = 42; // S2 labeled as PWM on PCB
 
 // MOTOR HELPER FUNCTIONS
 void ALLMotorSTOP(int maxSpeed) {
-  digitalWrite(LFmotorpin1, LOW);
-  digitalWrite(LBmotorpin2, LOW);
-  analogWrite(LmotorENA, maxSpeed);
+  digitalWrite(Lmotorpin1, LOW);
+  digitalWrite(Lmotorpin2, LOW);
+  analogWrite(LmotorENA, 0);
   
-  digitalWrite(RFmotorpin1, LOW);
-  digitalWrite(RBmotorpin2, LOW);
-  analogWrite(RmotorENA, maxSpeed);
+  digitalWrite(Rmotorpin1, LOW);
+  digitalWrite(Rmotorpin2, LOW);
+  analogWrite(RmotorENA, 0);
 }
 
 
 void leftPIVOT(int pivotSpeed) {
-  digitalWrite(LFmotorpin1, HIGH); // L backward
-  digitalWrite(LBmotorpin2, LOW);
+  digitalWrite(Lmotorpin1, HIGH); // L backward
+  digitalWrite(Lmotorpin2, LOW);
   analogWrite(LmotorENA, pivotSpeed);
 
-  digitalWrite(RFmotorpin1, HIGH); // R forward
-  digitalWrite(RBmotorpin2, LOW);
+  digitalWrite(Rmotorpin1, HIGH); // R forward
+  digitalWrite(Rmotorpin2, LOW);
   analogWrite(RmotorENA, pivotSpeed);
 }
 
 
 void rightPIVOT(int pivotSpeed) {
-  digitalWrite(LFmotorpin1, LOW); // L forward
-  digitalWrite(LBmotorpin2, HIGH);
+  digitalWrite(Lmotorpin1, LOW); // L forward
+  digitalWrite(Lmotorpin2, HIGH);
   analogWrite(LmotorENA, pivotSpeed);
 
-  digitalWrite(RFmotorpin1, LOW); // R backward
-  digitalWrite(RBmotorpin2, HIGH);
+  digitalWrite(Rmotorpin1, LOW); // R backward
+  digitalWrite(Rmotorpin2, HIGH);
   analogWrite(RmotorENA, pivotSpeed);
 }
 
 
 void setMotors(int leftSpeed, int rightSpeed) {
+
   if (leftSpeed > leftStickDzone) {
-    digitalWrite(LFmotorpin1, LOW); // L forward
-    digitalWrite(LBmotorpin2, HIGH);
+    digitalWrite(Lmotorpin1, LOW); // L forward
+    digitalWrite(Lmotorpin2, HIGH);
     analogWrite(LmotorENA, leftSpeed);
   } else if (leftSpeed < -leftStickDzone) {
-    digitalWrite(LFmotorpin1, HIGH); // L backward
-    digitalWrite(LBmotorpin2, LOW);
+    digitalWrite(Lmotorpin1, HIGH); // L backward
+    digitalWrite(Lmotorpin2, LOW);
     analogWrite(LmotorENA, -leftSpeed);
   } else {
-    digitalWrite(LFmotorpin1, LOW);
-    digitalWrite(LBmotorpin2, LOW);
+    digitalWrite(Lmotorpin1, LOW);
+    digitalWrite(Lmotorpin2, LOW);
     analogWrite(LmotorENA, 0);
   }
 
-
   if (rightSpeed > rightStickDzone) {
-    digitalWrite(RFmotorpin1, HIGH); // R forward
-    digitalWrite(RBmotorpin2, LOW);
+    digitalWrite(Rmotorpin1, HIGH); // R forward
+    digitalWrite(Rmotorpin2, LOW);
     analogWrite(RmotorENA, rightSpeed);
   } else if (rightSpeed < -rightStickDzone) {
-    digitalWrite(RFmotorpin1, LOW); // R backward
-    digitalWrite(RBmotorpin2, HIGH);
+    digitalWrite(Rmotorpin1, LOW); // R backward
+    digitalWrite(Rmotorpin2, HIGH);
     analogWrite(RmotorENA, -rightSpeed);
   } else {
-    digitalWrite(RFmotorpin1, LOW);
-    digitalWrite(RBmotorpin2, LOW);
+    digitalWrite(Rmotorpin1, LOW);
+    digitalWrite(Rmotorpin2, LOW);
     analogWrite(RmotorENA, 0);
   }
 }
@@ -123,11 +123,11 @@ void setup() {
   BP32.forgetBluetoothKeys();
   Serial.println("Waiting for controller...");
 
-  pinMode(LFmotorpin1, OUTPUT);
-  pinMode(LBmotorpin2, OUTPUT);
+  pinMode(Lmotorpin1, OUTPUT);
+  pinMode(Lmotorpin2, OUTPUT);
   pinMode(LmotorENA, OUTPUT);
-  pinMode(RFmotorpin1, OUTPUT);
-  pinMode(RBmotorpin2, OUTPUT);
+  pinMode(Rmotorpin1, OUTPUT);
+  pinMode(Rmotorpin2, OUTPUT);
   pinMode(RmotorENA, OUTPUT);
   pinMode(Collectionmotorpin1, OUTPUT);
   pinMode(Collectionmotorpin2, OUTPUT);
@@ -156,21 +156,30 @@ void loop() {
   // Buttons
   if (myController->a()) {
     Serial.println("A");
-    digitalWrite(Disposalmotorpin1, HIGH); // Disposal forward
-    digitalWrite(Disposalmotorpin2, LOW);
-    analogWrite(DisposalmotorENA, DisposalmotorSpeed);
+    digitalWrite(Collectionmotorpin1, HIGH); // Disposal forward
+    digitalWrite(Collectionmotorpin2, LOW);
+    analogWrite(CollectionmotorENA, DisposalmotorSpeed);
   }        
 
   if (myController->b()) {
     {
     Serial.println("B");
-    digitalWrite(Disposalmotorpin1, LOW);
-    digitalWrite(Disposalmotorpin2, HIGH); // Disposal backward
-    analogWrite(DisposalmotorENA, DisposalmotorSpeed);
+    digitalWrite(Collectionmotorpin1, LOW);
+    digitalWrite(Collectionmotorpin2, HIGH); // Disposal backward
+    analogWrite(CollectionmotorENA, DisposalmotorSpeed);
   }        
   }
-  if (myController->x())          Serial.println("X");
-  if (myController->y())          Serial.println("Y");
+  if (myController->x()) {
+    digitalWrite(Collectionmotorpin1, LOW);
+    digitalWrite(Collectionmotorpin2, LOW);
+    Serial.println("X");
+  }
+  if (myController->y()) {
+    digitalWrite(Collectionmotorpin1, LOW);
+    digitalWrite(Collectionmotorpin2, LOW);
+    Serial.println("Y"); 
+  }   
+
   if (myController->l1()) {
     grabberServo.write(0); // Move grabber servo to 0 degrees (open)
     Serial.println("LB");
@@ -187,15 +196,22 @@ void loop() {
   // DPad
   uint8_t dpad = myController->dpad();
   if (dpad & DPAD_UP) {
-      digitalWrite(Collectionmotorpin1, HIGH); // Collection forward
-      digitalWrite(Collectionmotorpin2, LOW);
-      analogWrite(CollectionmotorENA, CollectionmotorSpeed);
+      analogWrite(DisposalmotorENA, CollectionmotorSpeed);
+      digitalWrite(Disposalmotorpin1, HIGH); // Collection forward
+      digitalWrite(Disposalmotorpin2, LOW);
+      delay(600);
+      digitalWrite(Disposalmotorpin1, LOW); // Collection forward
+      digitalWrite(Disposalmotorpin2, LOW);
+
       Serial.println("DPad Up");
   }    
   if (dpad & DPAD_DOWN) {
-    digitalWrite(Collectionmotorpin1, LOW); // Collection backward
-    digitalWrite(Collectionmotorpin2, HIGH);
-    analogWrite(CollectionmotorENA, CollectionmotorSpeed);
+    analogWrite(DisposalmotorENA, CollectionmotorSpeed);
+    digitalWrite(Disposalnmotorpin1, LOW); // Collection backward
+    digitalWrite(Disposalmotorpin2, HIGH);
+    delay(350);
+    digitalWrite(Disposalmotorpin1, LOW); // Collection backward
+    digitalWrite(Disposalmotorpin2, LOW);
     Serial.println("DPad Down");
   }
   if (dpad & DPAD_LEFT) {
@@ -231,6 +247,7 @@ void loop() {
       int leftSpeed  = constrain(mappedY + mappedX, -255, 255);
       int rightSpeed = constrain(mappedY - mappedX, -255, 255);
     setMotors(leftSpeed, rightSpeed);
+    printf("Left Speed: %d \n Right Speed: %d \n", leftSpeed, rightSpeed);
   } else {
     ALLMotorSTOP(0);
   }

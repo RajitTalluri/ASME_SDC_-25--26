@@ -3,9 +3,6 @@
 
 ControllerPtr myController;
 
-// EG - extra gpio 13,12,11
-// EN - enable
-
 // DEADZONES
 int leftStickDzone = 50; // adjust as needed
 int rightStickDzone = 50; // adjust as needed
@@ -13,29 +10,24 @@ int leftTriggerDzone = 50; // adjust as needed
 int rightTriggerDzone = 50; // adjust as needed
 
 // DRIVETRAIN - L298n MOTOR COTNROL
-int LFmotorpin1 = 5; // In 1 pin | 15
-int LBmotorpin2 = 4; // In 2 pin | 16
-int LmotorENA = 6; // PWM, ENA pin | 7
+int LFmotorpin1 = 5; // In 1 pin
+int LBmotorpin2 = 4; // In 2 pin
+int LmotorENA = 6; // PWM 1 pin (20)
 
-int RFmotorpin1 = 3; // In 3 pin | 17 
-int RBmotorpin2 = 9; // In 4 pin | 2
-int RmotorENA = 10; // PWM, ENB pin | 1
+int RFmotorpin1 = 3; // In 3 pin
+int RBmotorpin2 = 9; // In 4 pin
+int RmotorENA = 10; // PWM 2 pin (21)
 
-int Collectionmotorpin1 = 15; // In 5 pin | 5
-int Collectionmotorpin2 = 16; // In 6 pin | 4
-int CollectionmotorENA = 7; // PWM, ENC pin | 6
-int CollectionmotorSpeed = 150; // adjust as needed 
-int Disposalmotorpin1 = 17; // In 7 pin | 3
-int Disposalmotorpin2 = 2; // In 8 pin | 9
-int DisposalmotorENA = 1; // PWM, END pin | 10
-int DisposalmotorSpeed = 100; // slower for more torque
-
+int Collectionmotorpin1 = 15; // In 5 pin
+int Collectionmotorpin2 = 16; // In 6 pin
+int CollectionmotorENA = 17; // PWM 3 pin
+int CollectionmotorSpeed = 255; // adjust as needed
 
 // SERVOS
 Servo grabberServo;
-int grabberServoPin = 41; // S1 labeled as PWM on PCB
+int grabberServoPin = 7; // adjust if needed, In 7 pin
 Servo sorterServo;
-int sorterServoPin = 42; // S2 labeled as PWM on PCB
+int sorterServoPin = 19; // adjust if needed, In 8 pin
 
 
 // MOTOR HELPER FUNCTIONS
@@ -87,7 +79,6 @@ void setMotors(int leftSpeed, int rightSpeed) {
     analogWrite(LmotorENA, 0);
   }
 
-
   if (rightSpeed > rightStickDzone) {
     digitalWrite(RFmotorpin1, HIGH); // R forward
     digitalWrite(RBmotorpin2, LOW);
@@ -132,9 +123,6 @@ void setup() {
   pinMode(Collectionmotorpin1, OUTPUT);
   pinMode(Collectionmotorpin2, OUTPUT);
   pinMode(CollectionmotorENA, OUTPUT);
-  pinMode(Disposalmotorpin1, OUTPUT);
-  pinMode(Disposalmotorpin2, OUTPUT);
-  pinMode(DisposalmotorENA, OUTPUT);
   ALLMotorSTOP(0);
 
   grabberServo.attach(grabberServoPin);
@@ -154,32 +142,10 @@ void loop() {
   }
 
   // Buttons
-  if (myController->a()) {
-    Serial.println("A");
-    digitalWrite(Disposalmotorpin1, HIGH); // Disposal forward
-    digitalWrite(Disposalmotorpin2, LOW);
-    analogWrite(DisposalmotorENA, DisposalmotorSpeed);
-  }        
-
-  if (myController->b()) {
-    {
-    Serial.println("B");
-    digitalWrite(Disposalmotorpin1, LOW);
-    digitalWrite(Disposalmotorpin2, HIGH); // Disposal backward
-    analogWrite(DisposalmotorENA, DisposalmotorSpeed);
-  }        
-  }
-  if (myController->x()) {
-    digitalWrite(Disposalmotorpin1, LOW);
-    digitalWrite(Disposalmotorpin2, LOW);
-    Serial.println("X");
-  }
-  if (myController->y()) {
-    digitalWrite(Collectionmotorpin1, LOW);
-    digitalWrite(Collectionmotorpin2, LOW);
-    Serial.println("Y"); 
-  }   
-
+  if (myController->a())          Serial.println("A");
+  if (myController->b())          Serial.println("B");
+  if (myController->x())          Serial.println("X");
+  if (myController->y())          Serial.println("Y");
   if (myController->l1()) {
     grabberServo.write(0); // Move grabber servo to 0 degrees (open)
     Serial.println("LB");
@@ -196,22 +162,15 @@ void loop() {
   // DPad
   uint8_t dpad = myController->dpad();
   if (dpad & DPAD_UP) {
-      analogWrite(CollectionmotorENA, CollectionmotorSpeed);
       digitalWrite(Collectionmotorpin1, HIGH); // Collection forward
       digitalWrite(Collectionmotorpin2, LOW);
-      delay(600);
-      digitalWrite(Collectionmotorpin1, LOW); // Collection forward
-      digitalWrite(Collectionmotorpin2, LOW);
-
+      analogWrite(CollectionmotorENA, CollectionmotorSpeed);
       Serial.println("DPad Up");
   }    
   if (dpad & DPAD_DOWN) {
-    analogWrite(CollectionmotorENA, CollectionmotorSpeed);
     digitalWrite(Collectionmotorpin1, LOW); // Collection backward
     digitalWrite(Collectionmotorpin2, HIGH);
-    delay(350);
-    digitalWrite(Collectionmotorpin1, LOW); // Collection backward
-    digitalWrite(Collectionmotorpin2, LOW);
+    analogWrite(CollectionmotorENA, CollectionmotorSpeed);
     Serial.println("DPad Down");
   }
   if (dpad & DPAD_LEFT) {
@@ -248,7 +207,7 @@ void loop() {
       int rightSpeed = constrain(mappedY - mappedX, -255, 255);
     setMotors(leftSpeed, rightSpeed);
   } else {
-    setMotors(0,0);
+    ALLMotorSTOP(0);
   }
 
   /*
