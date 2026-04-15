@@ -10,13 +10,13 @@ int leftTriggerDzone = 50; // adjust as needed
 int rightTriggerDzone = 50; // adjust as needed
 
 // DRIVETRAIN - L298n MOTOR COTNROL
-int LFmotorpin1 = 1; // In 1 pin
-int LBmotorpin2 = 2; // In 2 pin
-int LmotorENA = 3; // PWM 1 pin (20)
+int LFmotorpin1 = 5; // In 1 pin
+int LBmotorpin2 = 4; // In 2 pin
+int LmotorENA = 6; // PWM 1 pin (20)
 
-int RFmotorpin1 = 4; // In 3 pin
-int RBmotorpin2 = 5; // In 4 pin
-int RmotorENA = 6; // PWM 2 pin (21)
+int RFmotorpin1 = 3; // In 3 pin
+int RBmotorpin2 = 9; // In 4 pin
+int RmotorENA = 10; // PWM 2 pin (21)
 
 int Collectionmotorpin1 = 15; // In 5 pin
 int Collectionmotorpin2 = 16; // In 6 pin
@@ -78,7 +78,6 @@ void setMotors(int leftSpeed, int rightSpeed) {
     digitalWrite(LBmotorpin2, LOW);
     analogWrite(LmotorENA, 0);
   }
-
 
   if (rightSpeed > rightStickDzone) {
     digitalWrite(RFmotorpin1, HIGH); // R forward

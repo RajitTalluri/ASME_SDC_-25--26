@@ -42,11 +42,11 @@ int sorterServoPin = 42; // S2 labeled as PWM on PCB
 void ALLMotorSTOP(int maxSpeed) {
   digitalWrite(Lmotorpin1, LOW);
   digitalWrite(Lmotorpin2, LOW);
-  analogWrite(LmotorENA, maxSpeed);
+  analogWrite(LmotorENA, 0);
   
   digitalWrite(Rmotorpin1, LOW);
   digitalWrite(Rmotorpin2, LOW);
-  analogWrite(RmotorENA, maxSpeed);
+  analogWrite(RmotorENA, 0);
 }
 
 
@@ -73,6 +73,7 @@ void rightPIVOT(int pivotSpeed) {
 
 
 void setMotors(int leftSpeed, int rightSpeed) {
+
   if (leftSpeed > leftStickDzone) {
     digitalWrite(Lmotorpin1, LOW); // L forward
     digitalWrite(Lmotorpin2, HIGH);
@@ -86,7 +87,6 @@ void setMotors(int leftSpeed, int rightSpeed) {
     digitalWrite(Lmotorpin2, LOW);
     analogWrite(LmotorENA, 0);
   }
-
 
   if (rightSpeed > rightStickDzone) {
     digitalWrite(Rmotorpin1, HIGH); // R forward
@@ -156,22 +156,22 @@ void loop() {
   // Buttons
   if (myController->a()) {
     Serial.println("A");
-    digitalWrite(Disposalmotorpin1, HIGH); // Disposal forward
-    digitalWrite(Disposalmotorpin2, LOW);
-    analogWrite(DisposalmotorENA, DisposalmotorSpeed);
+    digitalWrite(Collectionmotorpin1, HIGH); // Disposal forward
+    digitalWrite(Collectionmotorpin2, LOW);
+    analogWrite(CollectionmotorENA, DisposalmotorSpeed);
   }        
 
   if (myController->b()) {
     {
     Serial.println("B");
-    digitalWrite(Disposalmotorpin1, LOW);
-    digitalWrite(Disposalmotorpin2, HIGH); // Disposal backward
-    analogWrite(DisposalmotorENA, DisposalmotorSpeed);
+    digitalWrite(Collectionmotorpin1, LOW);
+    digitalWrite(Collectionmotorpin2, HIGH); // Disposal backward
+    analogWrite(CollectionmotorENA, DisposalmotorSpeed);
   }        
   }
   if (myController->x()) {
-    digitalWrite(Disposalmotorpin1, LOW);
-    digitalWrite(Disposalmotorpin2, LOW);
+    digitalWrite(Collectionmotorpin1, LOW);
+    digitalWrite(Collectionmotorpin2, LOW);
     Serial.println("X");
   }
   if (myController->y()) {
@@ -196,22 +196,22 @@ void loop() {
   // DPad
   uint8_t dpad = myController->dpad();
   if (dpad & DPAD_UP) {
-      analogWrite(CollectionmotorENA, CollectionmotorSpeed);
-      digitalWrite(Collectionmotorpin1, HIGH); // Collection forward
-      digitalWrite(Collectionmotorpin2, LOW);
+      analogWrite(DisposalmotorENA, CollectionmotorSpeed);
+      digitalWrite(Disposalmotorpin1, HIGH); // Collection forward
+      digitalWrite(Disposalmotorpin2, LOW);
       delay(600);
-      digitalWrite(Collectionmotorpin1, LOW); // Collection forward
-      digitalWrite(Collectionmotorpin2, LOW);
+      digitalWrite(Disposalmotorpin1, LOW); // Collection forward
+      digitalWrite(Disposalmotorpin2, LOW);
 
       Serial.println("DPad Up");
   }    
   if (dpad & DPAD_DOWN) {
-    analogWrite(CollectionmotorENA, CollectionmotorSpeed);
-    digitalWrite(Collectionmotorpin1, LOW); // Collection backward
-    digitalWrite(Collectionmotorpin2, HIGH);
+    analogWrite(DisposalmotorENA, CollectionmotorSpeed);
+    digitalWrite(Disposalnmotorpin1, LOW); // Collection backward
+    digitalWrite(Disposalmotorpin2, HIGH);
     delay(350);
-    digitalWrite(Collectionmotorpin1, LOW); // Collection backward
-    digitalWrite(Collectionmotorpin2, LOW);
+    digitalWrite(Disposalmotorpin1, LOW); // Collection backward
+    digitalWrite(Disposalmotorpin2, LOW);
     Serial.println("DPad Down");
   }
   if (dpad & DPAD_LEFT) {
