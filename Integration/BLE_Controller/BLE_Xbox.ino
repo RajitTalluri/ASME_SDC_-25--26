@@ -156,22 +156,22 @@ void loop() {
   // Buttons
   if (myController->a()) {
     Serial.println("A");
-    digitalWrite(Collectionmotorpin1, HIGH); // Disposal forward
-    digitalWrite(Collectionmotorpin2, LOW);
-    analogWrite(CollectionmotorENA, DisposalmotorSpeed);
+    digitalWrite(Disposalmotorpin1, HIGH); // Disposal forward
+    digitalWrite(Disposalmotorpin2, LOW);
+    analogWrite(DisposalmotorENA, DisposalmotorSpeed);
   }        
 
   if (myController->b()) {
     {
     Serial.println("B");
-    digitalWrite(Collectionmotorpin1, LOW);
-    digitalWrite(Collectionmotorpin2, HIGH); // Disposal backward
-    analogWrite(CollectionmotorENA, DisposalmotorSpeed);
+    digitalWrite(Disposalmotorpin1, LOW);
+    digitalWrite(Disposalmotorpin2, HIGH); // Disposal backward
+    analogWrite(DisposalmotorENA, DisposalmotorSpeed);
   }        
   }
   if (myController->x()) {
-    digitalWrite(Collectionmotorpin1, LOW);
-    digitalWrite(Collectionmotorpin2, LOW);
+    digitalWrite(Disposalmotorpin1, LOW);
+    digitalWrite(Disposalmotorpin2, LOW);
     Serial.println("X");
   }
   if (myController->y()) {
@@ -196,22 +196,22 @@ void loop() {
   // DPad
   uint8_t dpad = myController->dpad();
   if (dpad & DPAD_UP) {
-      analogWrite(DisposalmotorENA, CollectionmotorSpeed);
-      digitalWrite(Disposalmotorpin1, HIGH); // Collection forward
-      digitalWrite(Disposalmotorpin2, LOW);
+      analogWrite(CollectionmotorENA, CollectionmotorSpeed);
+      digitalWrite(Collectionmotorpin1, HIGH); // Collection forward
+      digitalWrite(Collectionmotorpin2, LOW);
       delay(600);
-      digitalWrite(Disposalmotorpin1, LOW); // Collection forward
-      digitalWrite(Disposalmotorpin2, LOW);
+      digitalWrite(Collectionmotorpin1, LOW); // Collection forward
+      digitalWrite(Collectionmotorpin2, LOW);
 
       Serial.println("DPad Up");
   }    
   if (dpad & DPAD_DOWN) {
-    analogWrite(DisposalmotorENA, CollectionmotorSpeed);
-    digitalWrite(Disposalnmotorpin1, LOW); // Collection backward
-    digitalWrite(Disposalmotorpin2, HIGH);
+    analogWrite(CollectionmotorENA, CollectionmotorSpeed);
+    digitalWrite(Collectionmotorpin1, LOW); // Collection backward
+    digitalWrite(Collectionmotorpin2, HIGH);
     delay(350);
-    digitalWrite(Disposalmotorpin1, LOW); // Collection backward
-    digitalWrite(Disposalmotorpin2, LOW);
+    digitalWrite(Collectionmotorpin1, LOW); // Collection backward
+    digitalWrite(Collectionmotorpin2, LOW);
     Serial.println("DPad Down");
   }
   if (dpad & DPAD_LEFT) {
@@ -244,8 +244,11 @@ void loop() {
       // Map sticks to -255 to 255 first
       int mappedY = map(ly, -512, 512, 255, -255); // inverted Y
       int mappedX = map(lx, -512, 512, -255, 255);
-      int leftSpeed  = constrain(mappedY + mappedX, -255, 255);
-      int rightSpeed = constrain(mappedY - mappedX, -255, 255);
+
+    mappedX = mappedX / 2;   // softer turning
+    int rightSpeed  = constrain(mappedY + mappedX, -255, 255);
+    int leftSpeed = constrain(mappedY - mappedX, -255, 255);
+
     setMotors(leftSpeed, rightSpeed);
     printf("Left Speed: %d \n Right Speed: %d \n", leftSpeed, rightSpeed);
   } else {
