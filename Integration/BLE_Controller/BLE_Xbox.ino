@@ -24,18 +24,20 @@ int RmotorENA = 10; // PWM, ENB pin | 1
 int Collectionmotorpin1 = 15; // In 5 pin | 5
 int Collectionmotorpin2 = 16; // In 6 pin | 4
 int CollectionmotorENA = 7; // PWM, ENC pin | 6
-int CollectionmotorSpeed = 150; // adjust as needed 
+int CollectionmotorSpeed = 100; // adjust as needed 
 int Disposalmotorpin1 = 17; // In 7 pin | 3
 int Disposalmotorpin2 = 2; // In 8 pin | 9
 int DisposalmotorENA = 1; // PWM, END pin | 10
-int DisposalmotorSpeed = 100; // slower for more torque
+int DisposalmotorSpeed = 255; // slower for more torque
 
 
 // SERVOS
 Servo grabberServo;
-int grabberServoPin = 41; // S1 labeled as PWM on PCB
+int grabberServoPin = 42; // S1 labeled as PWM on PCB
+int grabberDeg = 90;
 Servo sorterServo;
-int sorterServoPin = 42; // S2 labeled as PWM on PCB
+int sorterServoPin = 41; // S2 labeled as PWM on PCB
+int sorterDeg = 135; 
 
 
 // MOTOR HELPER FUNCTIONS
@@ -138,9 +140,9 @@ void setup() {
   ALLMotorSTOP(0);
 
   grabberServo.attach(grabberServoPin);
-  grabberServo.write(90);
+  grabberServo.write(grabberDeg);
   sorterServo.attach(sorterServoPin); 
-  sorterServo.write(90);
+  sorterServo.write(sorterDeg);
 }
 
 
@@ -156,16 +158,16 @@ void loop() {
   // Buttons
   if (myController->a()) {
     Serial.println("A");
-    digitalWrite(Disposalmotorpin1, HIGH); // Disposal forward
-    digitalWrite(Disposalmotorpin2, LOW);
+    digitalWrite(Disposalmotorpin1, LOW); // Disposal Up
+    digitalWrite(Disposalmotorpin2, HIGH);
     analogWrite(DisposalmotorENA, DisposalmotorSpeed);
   }        
 
   if (myController->b()) {
     {
     Serial.println("B");
-    digitalWrite(Disposalmotorpin1, LOW);
-    digitalWrite(Disposalmotorpin2, HIGH); // Disposal backward
+    digitalWrite(Disposalmotorpin1, HIGH);
+    digitalWrite(Disposalmotorpin2, LOW); // Disposal down
     analogWrite(DisposalmotorENA, DisposalmotorSpeed);
   }        
   }
@@ -181,11 +183,15 @@ void loop() {
   }   
 
   if (myController->l1()) {
-    grabberServo.write(0); // Move grabber servo to 0 degrees (open)
+    grabberDeg -= 30;
+    grabberDeg = constrain(grabberDeg, 0,180);
+    grabberServo.write(grabberDeg); // Move grabber servo to 0 degrees (open)
     Serial.println("LB");
   }
   if (myController->r1()) {
-    grabberServo.write(180); // Move grabber servo to 180 degrees (close)
+    grabberDeg += 30;
+    grabberDeg = constrain(grabberDeg, 0,180);
+    grabberServo.write(grabberDeg); // Move grabber servo to 180 degrees (close)
     Serial.println("RB");
   }
   if (myController->l2())         Serial.println("LT");
@@ -215,11 +221,15 @@ void loop() {
     Serial.println("DPad Down");
   }
   if (dpad & DPAD_LEFT) {
-    sorterServo.write(0); // Move sorter servo to 0 degrees (left)
+    sorterDeg -= 45;
+    sorterDeg = constrain(sorterDeg, 45, 200);
+    sorterServo.write(sorterDeg); // Move sorter servo to 0 degrees (left)
     Serial.println("DPad Left");
   }
   if (dpad & DPAD_RIGHT) {
-    sorterServo.write(180); // Move sorter servo to 180 degrees (right)
+    sorterDeg += 45;
+    sorterDeg = constrain(sorterDeg, 45, 200);
+    sorterServo.write(sorterDeg); // Move sorter servo to 180 degrees (right)
     Serial.println("DPad Right");
   }
   if (myController->miscHome())   Serial.println("Xbox Button");
