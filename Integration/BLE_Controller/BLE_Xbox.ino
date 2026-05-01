@@ -57,8 +57,8 @@ void leftPIVOT(int pivotSpeed) {
   digitalWrite(Lmotorpin2, LOW);
   analogWrite(LmotorENA, pivotSpeed);
 
-  digitalWrite(Rmotorpin1, HIGH); // R forward
-  digitalWrite(Rmotorpin2, LOW);
+  digitalWrite(Rmotorpin1, LOW); // R forward
+  digitalWrite(Rmotorpin2, HIGH);
   analogWrite(RmotorENA, pivotSpeed);
 }
 
@@ -68,8 +68,8 @@ void rightPIVOT(int pivotSpeed) {
   digitalWrite(Lmotorpin2, HIGH);
   analogWrite(LmotorENA, pivotSpeed);
 
-  digitalWrite(Rmotorpin1, LOW); // R backward
-  digitalWrite(Rmotorpin2, HIGH);
+  digitalWrite(Rmotorpin1, HIGH); // R backward
+  digitalWrite(Rmotorpin2, LOW);
   analogWrite(RmotorENA, pivotSpeed);
 }
 
@@ -91,12 +91,12 @@ void setMotors(int leftSpeed, int rightSpeed) {
   }
 
   if (rightSpeed > rightStickDzone) {
-    digitalWrite(Rmotorpin1, HIGH); // R forward
-    digitalWrite(Rmotorpin2, LOW);
+    digitalWrite(Rmotorpin1, LOW); // R forward
+    digitalWrite(Rmotorpin2, HIGH);
     analogWrite(RmotorENA, rightSpeed);
   } else if (rightSpeed < -rightStickDzone) {
-    digitalWrite(Rmotorpin1, LOW); // R backward
-    digitalWrite(Rmotorpin2, HIGH);
+    digitalWrite(Rmotorpin1, HIGH); // R backward
+    digitalWrite(Rmotorpin2, LOW);
     analogWrite(RmotorENA, -rightSpeed);
   } else {
     digitalWrite(Rmotorpin1, LOW);
@@ -222,13 +222,13 @@ void loop() {
   }
   if (dpad & DPAD_LEFT) {
     sorterDeg -= 45;
-    sorterDeg = constrain(sorterDeg, 45, 200);
+    sorterDeg = constrain(sorterDeg, 90, 225);
     sorterServo.write(sorterDeg); // Move sorter servo to 0 degrees (left)
     Serial.println("DPad Left");
   }
   if (dpad & DPAD_RIGHT) {
     sorterDeg += 45;
-    sorterDeg = constrain(sorterDeg, 45, 200);
+    sorterDeg = constrain(sorterDeg, 90, 225);
     sorterServo.write(sorterDeg); // Move sorter servo to 180 degrees (right)
     Serial.println("DPad Right");
   }
@@ -253,7 +253,9 @@ void loop() {
   } else if (abs(lx) > leftStickDzone || abs(ly) > leftStickDzone) {
       // Map sticks to -255 to 255 first
       int mappedY = map(ly, -512, 512, 255, -255); // inverted Y
-      int mappedX = map(lx, -512, 512, -255, 255);
+      int mappedX = map(lx, -512, 512, 255, -255);
+
+      Serial.printf("mappedY: %d \n mappedX: %d \n", mappedY, mappedX);
 
     mappedX = mappedX / 2;   // softer turning
     int rightSpeed  = constrain(mappedY + mappedX, -255, 255);
